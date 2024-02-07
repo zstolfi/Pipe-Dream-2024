@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>File → Lua Base64</title>
+</head>
+<body>
+	<h1>File → Lua Base64</h1>
+	<div style="display: flex;  flex-direction: row; padding: 10px;">
+		<input type="file" id="input" />
+		<input type="submit" id="submit" value="Convert">
+	</div>
+	<textarea id="output" readonly style="width: 650px; height: 240px;"></textarea>
+	<script type="text/javascript">
+document.querySelector(`#submit`).addEventListener("click", () => convert());
+
+let width = 80;
+function convert() {
+	if (!document.querySelector(`#input`).files.length) return;
+	let file = document.querySelector(`#input`).files[0];
+	let reader = new FileReader();
+	reader.readAsArrayBuffer(file);
+
+	reader.onload = () => {
+		let str = btoa(
+			String.fromCharCode( ... new Uint8Array(reader.result) )
+		);
+
+		let lines = [];
+		for (let i=0; i<str.length; i+=width-9) {
+			lines.push(str.substr(i, width-9));
+		}
+		if (lines.length == 0) lines.push("");
+
+		for (let i=0; i<lines.length; i++) {
+			lines[i] = (
+				i==0 ? "return \""
+				:      "..     \""
+			) + lines[i] + "\"";
+		}
+		if (lines[lines.length-1].length < 80) {
+			lines[lines.length-1] += ";";
+		} else {
+			lines.push(";");
+		}
+
+		document.querySelector(`#output`).innerHTML = lines.join("\n");
+	};
+}
+	</script>
+</body>
+</html>
