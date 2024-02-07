@@ -58,7 +58,7 @@ local Util = {
 		for i=1, #bytes do
 			print(hex(bytes:byte(i,i)//16) .. hex(bytes:byte(i,i)%16));
 		end
-	end
+	end,
 };
 
 return Util;
