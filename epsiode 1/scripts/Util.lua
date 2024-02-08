@@ -1,6 +1,6 @@
 local Util = {};
 
---[[ Table Operations ]]----------------------------------------------------
+--[[ Table Operations ]]--------------------------------------------------------
 function Util.deepCopy(T)
 	local result = {};
 	for i,v in pairs(T) do
@@ -9,8 +9,8 @@ function Util.deepCopy(T)
 	return result;
 end
 
---[[ Binary I/O Functions ]]------------------------------------------------
-function Util.parseBase64(b64) --> binary string
+--[[ Binary Input ]]------------------------------------------------------------
+function Util.parseBase64(b64) --> expected binary string
 	local Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	..               "abcdefghijklmnopqrstuvwxyz"
 	..               "0123456789+/";
@@ -63,6 +63,32 @@ function Util.parseBase64(b64) --> binary string
 	return result;
 end
 
+function Util.parseU32(bytes)
+	return 256^3 * bytes:byte(1,1)
+	+      256^2 * bytes:byte(2,2)
+	+      256^1 * bytes:byte(3,3)
+	+      256^0 * bytes:byte(4,4);
+end
+
+function Util.parseS32(bytes)
+	local sign = bytes:byte(1,1) // 128 == 1;
+	return Util.parseU32(bytes) - (sign and 256^4 - 1 or 0);
+end
+
+function Util.parseU16(bytes)
+	return 256^1 * bytes:byte(1,1)
+	+      256^0 * bytes:byte(2,2);
+end
+
+function Util.parseS16(bytes)
+	local sign = bytes:byte(1,1) // 128 == 1;
+	return Util.parseU16(bytes) - (sign and 256^2 - 1 or 0);
+end
+
+function Util.parseU8(bytes) return bytes:byte(1,1); end
+function Util.parseS8(bytes) return ((bytes:byte(1,1) + 128) % 256) - 128; end
+
+--[[ Binary Output ]]-----------------------------------------------------------
 function Util.printBytes(bytes)
 	local hex = function(x) return ("0123456789abcdef"):sub(x+1,x+1); end
 	local line = "";

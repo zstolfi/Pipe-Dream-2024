@@ -6,11 +6,11 @@ print("Module scripts loaded.");
 
 print("bf:", MIDI.Parser.result);
 print("Input MIDI file:", #midiString, "chars long");
-local midi, err = Type.new(Parser):parse(midiString);
+local midi, err = Type.new(MIDI.Parser):parse(midiString);
 
 if not err then
-	print("MIDI object:", midi, ":D");
+	print("MIDI object:", midi);
 	print("af:", MIDI.Parser.result);
 else
-	error("Parsing failed with error:", err);
+	warn("Parsing failed with error:", err);
 end
