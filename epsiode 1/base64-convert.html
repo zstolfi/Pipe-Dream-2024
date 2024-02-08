@@ -28,21 +28,23 @@ function convert() {
 		);
 
 		let lines = [];
-		for (let i=0; i<str.length; i+=width-9) {
-			lines.push(str.substr(i, width-9));
+		for (let i=0; i<str.length; i+=width-4) {
+			lines.push(str.substr(i, width-4));
 		}
 		if (lines.length == 0) lines.push("");
 
 		for (let i=0; i<lines.length; i++) {
 			lines[i] = (
-				i==0 ? "return \""
-				:      "..     \""
+				i==0 ? "{ \""
+				:      ", \""
 			) + lines[i] + "\"";
 		}
-		if (lines[lines.length-1].length < 80) {
-			lines[lines.length-1] += ";";
+		lines.unshift("return table.concat(");
+		if (lines[lines.length-1].length <= width-2) {
+			lines[lines.length-1] += " }";
+			lines.push(");");
 		} else {
-			lines.push(";");
+			lines.push("});");
 		}
 
 		document.querySelector(`#output`).innerHTML = lines.join("\n");
