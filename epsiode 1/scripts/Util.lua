@@ -63,30 +63,19 @@ function Util.parseBase64(b64) --> expected binary string
 	return result;
 end
 
-function Util.parseU32(bytes)
-	return 256^3 * bytes:byte(1,1)
-	+      256^2 * bytes:byte(2,2)
-	+      256^1 * bytes:byte(3,3)
-	+      256^0 * bytes:byte(4,4);
+function Util.parseUint(bytes)
+	local result = 0;
+	for i=1, #bytes do
+		result = 256*result + bytes:byte(i,i);
+	end
+	return result;
 end
 
-function Util.parseS32(bytes)
-	local sign = bytes:byte(1,1) // 128 == 1;
-	return Util.parseU32(bytes) - (sign and 256^4 - 1 or 0);
+function Util.parseSint(bytes)
+	local sign = bytes:byte(1,1) // 128;
+	local exp = #bytes;
+	return Util.parseUint(bytes) - sign * (256^exp - 1);
 end
-
-function Util.parseU16(bytes)
-	return 256^1 * bytes:byte(1,1)
-	+      256^0 * bytes:byte(2,2);
-end
-
-function Util.parseS16(bytes)
-	local sign = bytes:byte(1,1) // 128 == 1;
-	return Util.parseU16(bytes) - (sign and 256^2 - 1 or 0);
-end
-
-function Util.parseU8(bytes) return bytes:byte(1,1); end
-function Util.parseS8(bytes) return ((bytes:byte(1,1) + 128) % 256) - 128; end
 
 --[[ Binary Output ]]-----------------------------------------------------------
 function Util.printBytes(bytes)
