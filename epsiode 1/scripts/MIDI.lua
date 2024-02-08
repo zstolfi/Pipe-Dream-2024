@@ -2,8 +2,6 @@ Util = require(workspace.scripts.Util);
 
 local MIDI = {
 	Parser = {
-		new = function(self) return Util.deepCopy(self); end;
-
 		result = {
 			header = {};
 			tracks = { {} };

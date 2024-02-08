@@ -1,6 +1,6 @@
 local Util = {};
 
---[[ Class Functions ]]-----------------------------------------------------
+--[[ Table Operations ]]----------------------------------------------------
 function Util.deepCopy(T)
 	local result = {};
 	for i,v in pairs(T) do
