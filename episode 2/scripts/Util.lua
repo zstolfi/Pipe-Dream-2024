@@ -22,7 +22,7 @@ function Util.parseBase64(b64) --> expected binary string
 	end;
 
 	-- Check input size.
-	if (#b64 % 4) ~= 0 or #b64 == 0 then
+	if #b64 % 4 ~= 0 or #b64 == 0 then
 		return nil, "Unexpected b64 length";
 	end
 
@@ -78,12 +78,16 @@ function Util.parseSint(bytes)
 end
 
 --[[ Binary Output ]]-----------------------------------------------------------
-function Util.printBytes(bytes)
+function Util.bytesToString(bytes) --> string
 	local hex = function(x) return ("0123456789abcdef"):sub(x+1,x+1); end
-	local line = "";
+	local result = "";
 	for i=1, #bytes do
-		print(hex(bytes:byte(i,i)//16) .. hex(bytes:byte(i,i)%16));
+		result = result
+		.. (i > 1 and " " or "")
+		.. hex(bytes:byte(i,i)//16)
+		.. hex(bytes:byte(i,i) %16);
 	end
+	return result;
 end
 
 return Util;

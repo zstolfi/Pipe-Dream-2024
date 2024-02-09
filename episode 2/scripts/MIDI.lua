@@ -26,11 +26,11 @@ function MIDI.Parser.parse(self, base64Str) --> expected MIDI table
 	self.i = 1; self.error = nil;
 
 	self:parseHeader();
-	if self.error then return nil, self:sendError(); end
+	if self.error then return nil, self:errorMessage(); end
 
 	for i=1, self.result.header.trackCount do
 		self:parseTrack();
-		if self.error then return nil, self:sendError(); end
+		if self.error then return nil, self:errorMessage(); end
 	end
 	
 	return self.result;
@@ -156,7 +156,7 @@ function MIDI.Parser.check(self, condition, message)
 	end
 end
 
-function MIDI.Parser.sendError(self)
+function MIDI.Parser.errorMessage(self) --> string
 	local error = self.error or "Unknown error";
 	return error .. ", at byte: " .. self.i .. ".";
 end
