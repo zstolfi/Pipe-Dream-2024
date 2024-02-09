@@ -7,10 +7,10 @@ print("Module scripts loaded.");
 print("Input Base64:", #midiString, "chars long");
 print({midiString});
 
-local bytes, error = Util.parseBase64(midiString);
-if not error then
+local bytes, err = Util.parseBase64(midiString);
+if not err then
 	print("Decoded bytes:", #bytes, "chars long");
 	print({Util.bytesToString(bytes)});
 else
-	warn("Parsing Base64 failed with error:", error);
+	warn("Parsing Base64 failed with error:", err);
 end

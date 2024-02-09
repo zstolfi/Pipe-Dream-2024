@@ -36,7 +36,7 @@ function Util.parseBase64(b64) --> expected binary string
 	for i=1, #tuples do
 		local isLast = i == #tuples;
 		for j=1, (isLast and 2 or 4) do
-			if not Alphabet:find(tuples[i]:sub(j,j)) then
+			if not isDigit(tuples[i]:sub(j,j)) then
 				return nil, "Invalid b64 digit";
 			end
 		end

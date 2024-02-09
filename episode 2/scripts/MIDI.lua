@@ -20,8 +20,8 @@ local MIDI = {
 };
 
 function MIDI.Parser.parse(self, base64Str) --> expected MIDI table
-	local bytes, error = Util.parseBase64(base64Str);
-	if error then return nil, error end
+	local bytes, err = Util.parseBase64(base64Str);
+	if err then return nil, err end
 	self.bytes = bytes;
 	self.i = 1; self.error = nil;
 
@@ -157,8 +157,8 @@ function MIDI.Parser.check(self, condition, message)
 end
 
 function MIDI.Parser.errorMessage(self) --> string
-	local error = self.error or "Unknown error";
-	return error .. ", at byte: " .. self.i .. ".";
+	local err = self.error or "Unknown error";
+	return err .. ", at byte: " .. self.i .. ".";
 end
 
 return MIDI;

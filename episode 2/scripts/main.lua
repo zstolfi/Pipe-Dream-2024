@@ -6,10 +6,10 @@ midiString = require(workspace.input.MIDIs["Pipe Dream.midi"]);
 print("Module scripts loaded.");
 
 print("Input MIDI file:", #midiString, "chars long");
-local midi, error = Type.new(MIDI.Parser):parse(midiString);
+local midi, err = Type.new(MIDI.Parser):parse(midiString);
 
-if not error then
+if not err then
 	print("MIDI object:", midi);
 else
-	warn("Parsing failed with error:", error);
+	warn("Parsing failed with error:", err);
 end
