@@ -52,7 +52,7 @@ function Util.parseBase64(b64) --> expected binary string
 	-- Transform into bytes.
 	local result = "";
 	for i=1, #tuples do
-		local c1, c2, c3, c4 = unpack(tuples[i]:split(""))
+		local c1, c2, c3, c4 = unpack(tuples[i]:split(""));
 		result = result .. string.char(
 			(digitOf(c1)* 4 + digitOf(c2)//16) % 256,
 			(digitOf(c2)*16 + digitOf(c3)// 4) % 256,
@@ -79,7 +79,7 @@ end
 
 --[[ Binary Output ]]-----------------------------------------------------------
 function Util.bytesToString(bytes) --> string
-	local hex = function(x) return ("0123456789abcdef"):sub(x+1,x+1); end
+	local hex = function(x) return ("0123456789abcdef"):sub(x+1,x+1); end;
 	local result = "";
 	for i=1, #bytes do
 		result = result
