@@ -158,7 +158,8 @@ end
 
 function MIDI.Parser.errorMessage(self) --> string
 	local err = self.error or "Unknown error";
-	return err .. ", at byte: " .. self.i .. ".";
+	return "Parsing MIDI failed with error:" .. err
+	..     ", at byte: " .. self.i .. ".";
 end
 
 return MIDI;
