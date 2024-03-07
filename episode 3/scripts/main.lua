@@ -8,6 +8,7 @@ print("Module scripts loaded.");
 
 local midi, cueTable;
 local err; (function()
+	-- Break early on error (by returning from an anonymous function)
 	print("Input MIDI file:", #midiString, "chars long");
 	midi, err = Type.new(MIDI.Parser):parse(midiString);
 	if err then return; end

@@ -1,6 +1,19 @@
 local Util = {};
 
 --[[ Table Operations ]]--------------------------------------------------------
+function Util.tableEqual(t, u)
+	if #t ~= #u then return false; end
+	for i,v in pairs(t) do
+		local w = u[i];
+		if (type(v) ~= type(w))
+		or (type(v) ~= "table" and v ~= w)
+		or (type(v) == "table" and not Util.tableEqual(v,w)) then
+			return false;
+		end
+	end
+	return true;
+end
+
 function Util.deepCopy(T)
 	local result = {};
 	for i,v in pairs(T) do
@@ -9,45 +22,28 @@ function Util.deepCopy(T)
 	return result;
 end
 
---[[ Table Search ]]------------------------------------------------------------
-function Util.findMinByKey(t, less)
-	local iMin, vMin;
-	for i,v in pairs(t) do
-		if iMin == nil or less(i, iMin) then
-			iMin, vMin = i,v;
+--[[ Table Lookup ]]------------------------------------------------------------
+function Util.findUnitl(t, pred) --> index
+	-- Binary search.
+	local lower, upper = 1, #t;
+	do
+		local pl, pu = pred(lower), pred(upper);
+		if (pl == false and pu == false) then return upper; end
+		if (pl == true  and pu == true ) then return lower; end
+	end
+
+	-- Assume going forward: pred(lower) == false and pred(upper) == true
+	while (lower < upper-1) do
+		local middle = (lower+upper)//2;
+		if (pred(middle) == false) then
+			lower = middle;
+		else
+			upper = middle
 		end
 	end
-	return iMin, vMin;
+
+	return lower;
 end
-
-function Util.firstPair(t)
-	return Util.findMinByKey(t, function(i,j)
-		return i < j;
-	end);
-end
-
-function Util.lastPair(t)
-	return Util.findMinByKey(t, function(i,j)
-		return i > j;
-	end);
-end
-
-function Util.pairBefore(t, i)
-	return Util.findMinByKey(t, function(j,k)
-		if j > i or k > i then
-			return false; else
-			return k > j; end
-	end);
-end
-
-function Util.firstKey(t) local i,v = Util.firstPair(t); return i; end
-function Util.firstVal(t) local i,v = Util.firstPair(t); return v; end
-
-function Util.lastKey(t) local i,v = Util.lastPair(t); return i; end
-function Util.lastVal(t) local i,v = Util.lastPair(t); return v; end
-
-function Util.keyBefore(t, i) local i,v = Util.pairBefore(t); return i; end
-function Util.valBefore(t, i) local i,v = Util.pairBefore(t); return v; end
 
 --[[ Binary Input ]]------------------------------------------------------------
 function Util.parseBase64(b64) --> expected binary string

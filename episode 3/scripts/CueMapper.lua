@@ -3,16 +3,20 @@ Util = require(workspace.scripts.Util);
 local CueMapper = {
 	result = {};
 
-	tempoPoints = { -- [tickCount] -> {seconds, seconds per tick}
-		[0] = {seconds = 0, slope = 0},
+	tempoPoints = {
+		{ticks = 0, seconds = 0, slope = 0},
 	};
 };
 
 function CueMapper.read(self, midi) --> expected cue table
 	self:setTempoPoints(midi);
 	local ticksToSec = function(ticks)
-		local ticksPrev, p = Util.pairBefore(self.tempoPoints, ticks);
-		return (ticks-ticksPrev) * p.slope + p.seconds;
+		local i = Util.findUntil(
+			self.tempoPoints,
+			function(p) return p.ticks > ticks; end
+		);
+		local p = self.tempoPoints[i];
+		return (ticks-p.ticks) * p.slope + p.seconds;
 	end;
 
 	for i, track in pairs(midi.tracks) do
@@ -20,8 +24,9 @@ function CueMapper.read(self, midi) --> expected cue table
 		local ticks = 0;
 		for _, event in pairs(track.events) do
 			ticks = ticks + event.deltaTime;
-			self.result[i][ticksToSec(ticks)] = true;
---			self.result[i][1000*ticksToSec(ticks)//1] = true;
+			self.result[i][#self.result[i]] = {
+				ticksToSec(ticks)
+			};
 		end
 	end
 
@@ -29,8 +34,8 @@ function CueMapper.read(self, midi) --> expected cue table
 end
 
 function CueMapper.setTempoPoints(self, midi)
-	local tempoList = { -- [tickCount] -> microseconds per 1/4-note
-		[0] = 500000,
+	local tempoList = {
+		{ticks = 0, microseconds = 5000000},
 	};
 
 	for _, track in pairs(midi.tracks) do
@@ -38,17 +43,21 @@ function CueMapper.setTempoPoints(self, midi)
 		for _, event in pairs(track.events) do
 			ticks = ticks + event.deltaTime;
 			if event.type == "Meta\x51" then
-				tempoList[ticks] = Util.parseUint(event.data);
+				tempoList[#tempoList + 1] = {
+					ticks = ticks,
+					microseconds = Util.parseUint(event.data);
+				};
 			end
 		end
 	end
 
-	for ticks, microseconds in pairs(tempoList) do
-		local ticksPrev, p = Util.lastPair(self.tempoPoints);
+	for _, tempo in pairs(tempoList) do
+		local p = self.tempoPoints[#self.tempoPoints];
 
-		self.tempoPoints[ticks] = {
-			seconds = (ticks-ticksPrev) * p.slope + p.seconds,
-			slope = (microseconds/1e6) / midi.header.tickRate,
+		self.tempoPoints[#self.tempoPoints + 1] = {
+			ticks = tempo.ticks,
+			seconds = (tempo.ticks-p.ticks) * p.slope + p.seconds,
+			slope = (tempo.microseconds/1e6) / midi.header.tickRate,
 		};
 	end
 end
