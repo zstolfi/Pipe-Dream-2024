@@ -19,9 +19,7 @@ function CueMapper.read(self, midi, instruments) --> expected cue table
 	=    midi,      instruments;
 
 	self:setTrackNames();
-	print("\tTrack names:", self.trackNames);
 	self:setKeys();
-	print("\tKey criteria:", self.keyDefs);
 
 	self:iterateEvents(function(ticks, event, trackNum)
 		-- In Pipe Dream we only listen for note-on events.
@@ -43,7 +41,6 @@ function CueMapper.read(self, midi, instruments) --> expected cue table
 	end);
 
 	for i,v in pairs(self.result) do
-		print(v == self.result[i]);
 		Util.sort(v, function(a, b)
 			return a.seconds < b.seconds;
 		end);

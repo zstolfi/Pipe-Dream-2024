@@ -47,15 +47,30 @@ function MIDI.Parser.parseHeader(self)
 	self:check(length   == 6        , "Invalid header length");
 	self:check(format    < 3        , "Unknown MIDI format");
 	self:check(division ~= 0        , "0 ticks per 1/4-note");
-	self:check(division  > 0        , "SMPTE subdivisions are not supported");
 	self:check(ntrks     > 0        , "Invalid number of tracks");
 	self:check(format~=0 or ntrks==1, "Invalid number of tracks");
 	if self.error then return; end
 
+	if division > 0 then
+		tickRate = division;
+	else
+		local fps = nil;
+		
+		if     division//256 == -24 then fps = 24;
+		elseif division//256 == -25 then fps = 25;
+		elseif division//256 == -29 then fps = 30/1.001;
+		elseif division//256 == -30 then fps = 30;
+		end
+		self:check(fps ~= nil, "Unknown SMPTE format");
+		if self.error then return; end
+
+		tickRate = (division % 256) * fps;
+	end
+
 	self.result.header = {
 		format = format;
 		trackCount = ntrks;
-		tickRate = division;
+		tickRate = tickRate;
 	};
 end
 
