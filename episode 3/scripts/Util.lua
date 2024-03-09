@@ -1,12 +1,17 @@
 local Util = {};
 
+--[[ Function Objects ]]--------------------------------------------------------
+function Util.less (a, b) return a <  b; end
+function Util.equal(a, b) return a == b; end
+function Util.identity(a) return a;      end
+
 --[[ Table Operations ]]--------------------------------------------------------
 function Util.tableEqual(t, u)
 	if #t ~= #u then return false; end
 	for i,v in pairs(t) do
 		local w = u[i];
 		if (type(v) ~= type(w))
-		or (type(v) ~= "table" and v ~= w)
+		or (type(v) ~= "table" and not Util.equal(v,w))
 		or (type(v) == "table" and not Util.tableEqual(v,w)) then
 			return false;
 		end
@@ -20,6 +25,38 @@ function Util.deepCopy(T)
 		result[i] = (type(v) == "table") and Util.deepCopy(v) or v;
 	end
 	return result;
+end
+
+-- https://en.wikipedia.org/wiki/Quicksort#Lomuto_partition_scheme
+function Util.sort(t, less)
+	local function swap(i, j)
+		local temp = t[i];
+		t[i] = t[j];
+		t[j] = temp;
+	end
+
+	local function parition(lo, hi)
+		local mid = t[hi];
+		local i = lo - 1;
+		for j=lo, hi-1 do
+			if less(t[j], mid) then
+				i = i + 1;
+				swap(i, j);
+			end
+		end
+		i = i + 1;
+		swap(i, hi);
+		return i;
+	end
+
+	local function quickSort(lo, hi)
+		if lo >= hi then return; end
+		local pivot = parition(lo, hi);
+		quickSort(lo, pivot-1);
+		quickSort(pivot+1, hi);
+	end
+
+	return quickSort(1, #t);
 end
 
 --[[ Table Lookup ]]------------------------------------------------------------

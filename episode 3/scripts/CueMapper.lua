@@ -42,17 +42,22 @@ function CueMapper.read(self, midi, instruments) --> expected cue table
 		end
 	end);
 
+	for i,v in pairs(self.result) do
+		print(v == self.result[i]);
+		Util.sort(v, function(a, b)
+			return a.seconds < b.seconds;
+		end);
+	end
+
 	return self.result;
 end
 
 function CueMapper.setTrackNames(self)
-	for i=1, self.midi.header.trackCount do
-		for _, event in pairs(self.midi.tracks[i].events) do
-			if event.type == "Meta\x03" then
-				self.trackNames[event.data] = i;
-			end
+	self:iterateEvents(function( _ , event, trackNum)
+		if event.type == "Meta\x03" then
+			self.trackNames[event.data] = trackNum;
 		end
-	end
+	end);
 end
 
 function CueMapper.setKeys(self)
@@ -119,22 +124,17 @@ function CueMapper.setTempoPoints(self)
 		{ticks = 0, microseconds = 5000000},
 	};
 
-	for _, track in pairs(self.midi.tracks) do
-		local ticks = 0;
-		for _, event in pairs(track.events) do
-			ticks = ticks + event.deltaTime;
-			if event.type == "Meta\x51" then
-				tempoList[#tempoList + 1] = {
-					ticks = ticks,
-					microseconds = Util.parseUint(event.data),
-				};
-			end
+	self:iterateEvents(function(ticks, event)
+		if event.type == "Meta\x51" then
+			tempoList[#tempoList + 1] = {
+				ticks = ticks,
+				microseconds = Util.parseUint(event.data),
+			};
 		end
-	end
+	end);
 
 	for _, tempo in pairs(tempoList) do
 		local p = self.tempoPoints[#self.tempoPoints];
-
 		self.tempoPoints[#self.tempoPoints + 1] = {
 			ticks = tempo.ticks,
 			seconds = (tempo.ticks-p.ticks) * p.slope + p.seconds,
@@ -143,7 +143,6 @@ function CueMapper.setTempoPoints(self)
 	end
 end
 
--- TODO: Make more functions use this.
 function CueMapper.iterateEvents(self, f)
 	for i, track in pairs(self.midi.tracks) do
 		local ticks = 0;
