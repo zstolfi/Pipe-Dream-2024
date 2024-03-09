@@ -23,11 +23,11 @@ function Util.deepCopy(T)
 end
 
 --[[ Table Lookup ]]------------------------------------------------------------
-function Util.findUnitl(t, pred) --> index
+function Util.findUntil(t, pred) --> index
 	-- Binary search.
 	local lower, upper = 1, #t;
 	do
-		local pl, pu = pred(lower), pred(upper);
+		local pl, pu = pred(t[lower]), pred(t[upper]);
 		if (pl == false and pu == false) then return upper; end
 		if (pl == true  and pu == true ) then return lower; end
 	end
@@ -35,7 +35,7 @@ function Util.findUnitl(t, pred) --> index
 	-- Assume going forward: pred(lower) == false and pred(upper) == true
 	while (lower < upper-1) do
 		local middle = (lower+upper)//2;
-		if (pred(middle) == false) then
+		if (pred(t[middle]) == false) then
 			lower = middle;
 		else
 			upper = middle
@@ -43,6 +43,13 @@ function Util.findUnitl(t, pred) --> index
 	end
 
 	return lower;
+end
+
+--[[ Set Operations ]]----------------------------------------------------------
+function Util.setFrom(t)
+	local set = {};
+	for _,v in pairs(t) do set[v] = true; end
+	return set;
 end
 
 --[[ Binary Input ]]------------------------------------------------------------

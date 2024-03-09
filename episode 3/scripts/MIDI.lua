@@ -95,12 +95,10 @@ function MIDI.Parser.parseEvent(self, eventList)
 	local eventType = nil;
 	local length = nil;
 
-	if 0x80 <= self.status and self.status <= 0xEF then
-		eventType = "Midi";
-	elseif 0xF0 <= self.status and self.status <= 0xF7 then
-		eventType = "SysEx";
-	elseif 0xFF <= self.status and self.status <= 0xFF then
-		eventType = "Meta";
+	local inRange = function(x,a,b) return a <= x and x <= b; end;
+	if     inRange(self.status, 0x80, 0xEF) then eventType = "Midi";
+	elseif inRange(self.status, 0xF0, 0xF0) then eventType = "SysEx";
+	elseif inRange(self.status, 0xFF, 0xFF) then eventType = "Meta";
 	end
 	self:check(eventType ~= nil, "Unknown status byte");
 	if self.error then return; end
@@ -116,6 +114,7 @@ function MIDI.Parser.parseEvent(self, eventList)
 	table.insert(eventList, {
 		deltaTime = deltaTime;
 		type = eventType;
+		status = self.status;
 		data = data;
 	});
 end
