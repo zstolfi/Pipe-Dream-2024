@@ -56,11 +56,14 @@ function Util.sort(t, less)
 		quickSort(pivot+1, hi);
 	end
 
-	return quickSort(1, #t);
+	quickSort(1, #t);
+	-- Return a reference.
+	return t;
 end
 
 --[[ Table Lookup ]]------------------------------------------------------------
 function Util.findUntil(t, pred) --> index
+	if #t == 0 then return 1; end
 	-- Binary search.
 	local lower, upper = 1, #t;
 	do
@@ -85,7 +88,11 @@ end
 --[[ Set Operations ]]----------------------------------------------------------
 function Util.setFrom(t)
 	local set = {};
-	for _,v in pairs(t) do set[v] = true; end
+	for _,v in pairs(t) do
+		if v ~= nil then
+			set[v] = true;
+		end
+	end
 	return set;
 end
 
@@ -102,7 +109,7 @@ function Util.parseBase64(b64) --> expected binary string
 	end;
 
 	-- Check input size.
-	if #b64 % 4 ~= 0 or #b64 == 0 then
+	if #b64 % 4 ~= 0 then
 		return nil, "Unexpected b64 length";
 	end
 
@@ -144,6 +151,7 @@ function Util.parseBase64(b64) --> expected binary string
 end
 
 function Util.parseUint(bytes)
+	if #bytes == 0 then return nil; end
 	local result = 0;
 	for i=1, #bytes do
 		result = 256*result + bytes:byte(i,i);
@@ -152,6 +160,7 @@ function Util.parseUint(bytes)
 end
 
 function Util.parseSint(bytes)
+	if #bytes == 0 then return nil; end
 	local sign = bytes:byte(1,1) // 128;
 	local exp = #bytes;
 	return Util.parseUint(bytes) - sign * (256^exp - 1);

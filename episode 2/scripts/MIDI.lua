@@ -51,27 +51,29 @@ function MIDI.Parser.parseHeader(self)
 	self:check(format~=0 or ntrks==1, "Invalid number of tracks");
 	if self.error then return; end
 
+	self.result.header = {
+		format = format;
+		trackCount = ntrks;
+		tickRate = self:parseTickRate(division);
+	};
+end
+
+function MIDI.Parser.parseTickRate(self, division)
 	if division > 0 then
-		tickRate = division;
+		return division;
 	else
 		local fps = nil;
-		
+
 		if     division//256 == -24 then fps = 24;
 		elseif division//256 == -25 then fps = 25;
 		elseif division//256 == -29 then fps = 30/1.001;
 		elseif division//256 == -30 then fps = 30;
 		end
 		self:check(fps ~= nil, "Unknown SMPTE format");
-		if self.error then return; end
 
-		tickRate = (division % 256) * fps;
+		-- TODO: Verify (unsigned % signed) is safe.
+		return (division % 256) * fps;
 	end
-
-	self.result.header = {
-		format = format;
-		trackCount = ntrks;
-		tickRate = tickRate;
-	};
 end
 
 function MIDI.Parser.parseTrack(self)
