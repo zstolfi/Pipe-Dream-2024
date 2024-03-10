@@ -7,16 +7,19 @@ function Util.identity(a) return a;      end
 
 --[[ Table Operations ]]--------------------------------------------------------
 function Util.tableEqual(t, u)
-	if #t ~= #u then return false; end
-	for i,v in pairs(t) do
-		local w = u[i];
-		if (type(v) ~= type(w))
-		or (type(v) ~= "table" and not Util.equal(v,w))
-		or (type(v) == "table" and not Util.tableEqual(v,w)) then
-			return false;
+	local function isomorphic(a,b)
+		for i,v in pairs(a) do
+			local w = b[i];
+			if (type(v) ~= type(w))
+			or (type(v) ~= "table" and not Util.equal(v,w))
+			or (type(v) == "table" and not Util.tableEqual(v,w)) then
+				return false;
+			end
 		end
+		return true;
 	end
-	return true;
+
+	return #t == #u and isomorphic(t, u) and isomorphic(u,t);
 end
 
 function Util.deepCopy(T)
@@ -109,6 +112,7 @@ function Util.parseBase64(b64) --> expected binary string
 	end;
 
 	-- Check input size.
+	if #b64 == 0 then return ""; end
 	if #b64 % 4 ~= 0 then
 		return nil, "Unexpected b64 length";
 	end
@@ -129,12 +133,12 @@ function Util.parseBase64(b64) --> expected binary string
 		end
 	end
 
+	local padCase = nil;
 	local p, q = unpack(tuples[#tuples]:sub(3,4):split(""));
-	if  not (isDigit(p) and isDigit(q))
-	and not (isDigit(p) and isPad  (q))
-	and not (isPad  (p) and isPad  (q)) then
-		return nil, "Invalid b64 padding";
-	end
+	if isDigit(p) and isDigit(q) then padCase = 0; end
+	if isDigit(p) and isPad  (q) then padCase = 1; end
+	if isPad  (p) and isPad  (q) then padCase = 2; end
+	if padCase == nil then return "Invalid b64 padding"; end
 
 	-- Transform into bytes.
 	local result = "";
@@ -146,6 +150,9 @@ function Util.parseBase64(b64) --> expected binary string
 			(digitOf(c3)*64 + digitOf(c4)// 1) % 256
 		);
 	end
+
+	-- Remove the bytes caused by the padding;
+	result = result:sub(1, -padCase - 1);
 
 	return result;
 end
@@ -163,7 +170,7 @@ function Util.parseSint(bytes)
 	if #bytes == 0 then return nil; end
 	local sign = bytes:byte(1,1) // 128;
 	local exp = #bytes;
-	return Util.parseUint(bytes) - sign * (256^exp - 1);
+	return Util.parseUint(bytes) - sign * 256^exp;
 end
 
 --[[ Binary Output ]]-----------------------------------------------------------

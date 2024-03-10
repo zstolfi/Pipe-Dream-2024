@@ -81,6 +81,12 @@ check(not Util.tableEqual({nil, 2}, {[2]=2})
 check(not Util.tableEqual({1,2,3,nil,5}, {1,2,3, [5]=5})
 ,     "Util.tableEqual");
 
+check(not Util.tableEqual({a=1, b=1}, {a=1, b=1, c=1})
+,     "Util.tableEqual");
+
+check(not Util.tableEqual({a=1, b=1, c=1}, {a=1, b=1})
+,     "Util.tableEqual");
+
 -- deepCopy
 check((function()
 	local t = {};
@@ -150,8 +156,8 @@ end) (), "Util.sort");
 
 check((function()
 	local t, result
-	= {{x= 1, y= 1}, {x=-1, y= 1}, {x=-1, y=-1}, {x= 1, =-1}}
-	, {{x=-1, y=-1}, {x= 1, y=-1}, {x= 1, y= 1}, {x=-1, = 1}};
+	= {{x= 1, y= 1}, {x=-1, y= 1}, {x=-1, y=-1}, {x= 1, y=-1}}
+	, {{x=-1, y=-1}, {x= 1, y=-1}, {x= 1, y= 1}, {x=-1, y= 1}};
 	Util.sort(t, function(a, b)
 		return math.atan2(a.y, a.x) < math.atan2(b.y, b.x)
 	end);
@@ -174,76 +180,91 @@ check((function()
 		{{1,3,5}, 4, 2},
 		{{1,3,5}, 5, 3},
 		{{1,3,5}, 6, 3},
-	}
-	return Util.findUntil(t, function(x) return x > i; end);
+	};
+	for i,v in pairs(t_i_result_table) do
+		if Util.findUntil(v[1], function(x) return x > v[2]; end) ~= v[3] then
+			return false;
+		end
+	end
+	return true;
 end) (), "Util.findUntil");
 
 check((function()
 	local I, O = true, false;
 	local t_result_table = {
 		{{I,I,I}, 1},
-		{{O,I,I}, 2},
-		{{O,O,I}, 3},
+		{{O,I,I}, 1},
+		{{O,O,I}, 2},
 		{{O,O,O}, 3},
-	}
-	return Util.findUntil(t, function(x) return x; end);
+	};
+	for i,v in pairs(t_result_table) do
+		if Util.findUntil(v[1], Util.identity) ~= v[2] then
+			return false;
+		end
+	end
+	return true;
 end) (), "Util.findUntil");
 
 -- setFrom
-check(Util.setFrom({}) == {}
-,     "Util.setFrom");
+check(Util.tableEqual(
+      Util.setFrom({}), {}
+),    "Util.setFrom");
 
-check(Util.setFrom({1,2,3}) == {[1]=true, [2]=true, [3]=true}
-,     "Util.setFrom");
+check(Util.tableEqual(
+      Util.setFrom({1,2,3}), {[1]=true, [2]=true, [3]=true}
+),    "Util.setFrom");
 
-check(Util.setFrom({nil}) == {}
-,     "Util.setFrom");
+check(Util.tableEqual(
+      Util.setFrom({nil}), {}
+),    "Util.setFrom");
 
-check(Util.setFrom({1,1}) == {[1]=true}
-,     "Util.setFrom");
+check(Util.tableEqual(
+      Util.setFrom({1,1}), {[1]=true}
+),    "Util.setFrom");
 
-check(Util.setFrom({false,true}) == {[false]=true, [true]=true}
-,     "Util.setFrom");
+check(Util.tableEqual(
+      Util.setFrom({false,true}), {[false]=true, [true]=true}
+),    "Util.setFrom");
 
 -- parseBase64
 check(Util.parseBase64("") == ""
 ,     "Util.parseBase64");
 
-check(Util.parseBase64("\0") == "AA=="
+check(Util.parseBase64("AA==") == "\0"
 ,     "Util.parseBase64");
 
-check(Util.parseBase64("\0\0") == "AAA="
+check(Util.parseBase64("AAA=") == "\0\0"
 ,     "Util.parseBase64");
 
-check(Util.parseBase64("\0\0\0") == "AAAA"
+check(Util.parseBase64("AAAA") == "\0\0\0"
 ,     "Util.parseBase64");
 
-check(Util.parseBase64("MThd") == "TVRoZA=="
+check(Util.parseBase64("TVRoZA==") == "MThd"
 ,     "Util.parseBase64");
 
-check(Util.parseBase64("MThd\0\0\0\6") == "TVRoZAAAAAY="
+check(Util.parseBase64("TVRoZAAAAAY=") == "MThd\0\0\0\6"
 ,     "Util.parseBase64");
 
-check(not Util.parseBase64("a") ~= nil
+check(not (Util.parseBase64("a") ~= nil)
 ,     "Util.parseBase64");
 
-check(not Util.parseBase64("=") ~= nil
+check(not (Util.parseBase64("=") ~= nil)
 ,     "Util.parseBase64");
 
-check(not Util.parseBase64("===") ~= nil
+check(not (Util.parseBase64("===") ~= nil)
 ,     "Util.parseBase64");
 
-check(not Util.parseBase64("12=456") ~= nil
+check(not (Util.parseBase64("12=456") ~= nil)
 ,     "Util.parseBase64");
 
-check(not Util.parseBase64("a") ~= nil
+check(not (Util.parseBase64("a") ~= nil)
 ,     "Util.parseBase64");
 
-check(not Util.parseBase64("$") ~= nil
+check(not (Util.parseBase64("$") ~= nil)
 ,     "Util.parseBase64");
 
 -- parseUint
-check(not Util.parseUint("") ~= nil
+check(not (Util.parseUint("") ~= nil)
 ,     "Util.parseUint");
 
 check(Util.parseUint("\0") == 0
@@ -259,7 +280,7 @@ check(Util.parseUint("\xFF\xFF\xFF\xFF") == 0xFFFFFFFF
 ,     "Util.parseUint");
 
 -- parseSint
-check(not Util.parseSint("") ~= nil
+check(not (Util.parseSint("") ~= nil)
 ,     "Util.parseSint");
 
 check(Util.parseSint("\0") == 0
@@ -268,7 +289,7 @@ check(Util.parseSint("\0") == 0
 check(Util.parseSint("\x7F") == 127
 ,     "Util.parseSint");
 
-check(Util.parseSint("\x80") == 128
+check(Util.parseSint("\x80") == -128
 ,     "Util.parseSint");
 
 check(Util.parseSint("\xFF") == -1
@@ -295,7 +316,7 @@ check(Util.parseSint("\x76\x54\x32\x10") == 0x76543210
 check(Util.parseSint("\x7F\xFF\xFF\xFF") == 0x7FFFFFFF
 ,     "Util.parseSint");
 
-check(Util.parseSint("\x80\x00\x00\x00") == -0x8FFFFFFF
+check(Util.parseSint("\x80\x00\x00\x00") == -0x80000000
 ,     "Util.parseSint");
 
 check(Util.parseSint("\xFF\xFF\xFF\xFF") == -1
