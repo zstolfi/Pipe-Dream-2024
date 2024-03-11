@@ -6,22 +6,6 @@ function Util.equal(a, b) return a == b; end
 function Util.identity(a) return a;      end
 
 --[[ Table Operations ]]--------------------------------------------------------
-function Util.tableEqual(t, u)
-	local function isomorphic(a,b)
-		for i,v in pairs(a) do
-			local w = b[i];
-			if (type(v) ~= type(w))
-			or (type(v) ~= "table" and not Util.equal(v,w))
-			or (type(v) == "table" and not Util.tableEqual(v,w)) then
-				return false;
-			end
-		end
-		return true;
-	end
-
-	return #t == #u and isomorphic(t, u) and isomorphic(u,t);
-end
-
 function Util.deepCopy(T)
 	local result = {};
 	for i,v in pairs(T) do
@@ -64,6 +48,54 @@ function Util.sort(t, less)
 	return t;
 end
 
+--[[ Table Query ]]-------------------------------------------------------------
+function Util.tableEqual(t, u) --> bool
+	local function isomorphic(a,b)
+		for i,v in pairs(a) do
+			local w = b[i];
+			if (type(v) ~= type(w))
+			or (type(v) ~= "table" and not Util.equal(v,w))
+			or (type(v) == "table" and not Util.tableEqual(v,w)) then
+				return false;
+			end
+		end
+		return true;
+	end
+
+	return #t == #u and isomorphic(t, u) and isomorphic(u,t);
+end
+
+-- https://en.cppreference.com/w/cpp/algorithm/all_any_none_of#Notes
+function Util.allOf(t, pred) --> bool
+	if #t == 0 then return true; end
+	for _, v in pairs(t) do
+		if not pred(v) then
+			return false;
+		end
+	end
+	return true;
+end
+
+function Util.anyOf(t, pred) --> bool
+	if #t == 0 then return false; end
+	for _, v in pairs(t) do
+		if pred(v) then
+			return true;
+		end
+	end
+	return false;
+end
+
+function Util.noneOf(t, pred) --> bool
+	if #t == 0 then return true; end
+	for _, v in pairs(t) do
+		if pred(v) then
+			return false;
+		end
+	end
+	return true;
+end
+
 --[[ Table Lookup ]]------------------------------------------------------------
 function Util.findUntil(t, pred) --> index
 	if #t == 0 then return 1; end
@@ -89,9 +121,9 @@ function Util.findUntil(t, pred) --> index
 end
 
 --[[ Set Operations ]]----------------------------------------------------------
-function Util.setFrom(t)
+function Util.Set(t)
 	local set = {};
-	for _,v in pairs(t) do
+	for _, v in pairs(t) do
 		if v ~= nil then
 			set[v] = true;
 		end
@@ -157,7 +189,7 @@ function Util.parseBase64(b64) --> expected binary string
 	return result;
 end
 
-function Util.parseUint(bytes)
+function Util.parseUint(bytes) --> int
 	if #bytes == 0 then return nil; end
 	local result = 0;
 	for i=1, #bytes do
@@ -166,7 +198,7 @@ function Util.parseUint(bytes)
 	return result;
 end
 
-function Util.parseSint(bytes)
+function Util.parseSint(bytes) --> int
 	if #bytes == 0 then return nil; end
 	local sign = bytes:byte(1,1) // 128;
 	local exp = #bytes;
@@ -174,7 +206,7 @@ function Util.parseSint(bytes)
 end
 
 --[[ Binary Output ]]-----------------------------------------------------------
-function Util.bytesToString(bytes)
+function Util.bytesToString(bytes) --> string
 	local hex = function(x) return ("0123456789abcdef"):sub(x+1,x+1); end;
 	local result = "";
 	for i=1, #bytes do

@@ -15,7 +15,7 @@ local MIDI = {
 
 	statusLength = {
 		[0x8] = 2, [0x9] = 2, [0xA] = 2, [0xB] = 2,
-		[0xC] = 1, [0xD] = 1, [0xE] = 2
+		[0xC] = 1, [0xD] = 1, [0xE] = 2,
 	};
 };
 
@@ -42,24 +42,26 @@ function MIDI.Parser.parseHeader(self)
 	local format    = self:readUint(2);
 	local ntrks     = self:readUint(2);
 	local division  = self:readSint(2);
+	local tickRate  = self:parseTickRate(division);
 
 	self:check(chunkType == "MThd"  , "Input file is not a MIDI file");
-	self:check(length   == 6        , "Invalid header length");
-	self:check(format    < 3        , "Unknown MIDI format");
-	self:check(division ~= 0        , "0 ticks per 1/4-note");
-	self:check(ntrks     > 0        , "Invalid number of tracks");
+	self:check(length    == 6       , "Invalid header length");
+	self:check(format     < 3       , "Unknown MIDI format");
+	self:check(tickRate  ~= 0       , "0 ticks per second");
+	self:check(ntrks      > 0       , "Invalid number of tracks");
 	self:check(format~=0 or ntrks==1, "Invalid number of tracks");
 	if self.error then return; end
 
 	self.result.header = {
 		format = format;
 		trackCount = ntrks;
-		tickRate = self:parseTickRate(division);
+		tickRate = tickRate;
+		divisionType = (division >= 0) and "1/4 note" or "second";
 	};
 end
 
 function MIDI.Parser.parseTickRate(self, division)
-	if division > 0 then
+	if division >= 0 then
 		return division;
 	else
 		local fps = nil;
@@ -71,7 +73,7 @@ function MIDI.Parser.parseTickRate(self, division)
 		end
 		self:check(fps ~= nil, "Unknown SMPTE format");
 
-		-- TODO: Verify (unsigned % signed) is safe.
+		-- TODO: Verify (signed % unsigned) is safe.
 		return (division % 256) * fps;
 	end
 end
@@ -84,23 +86,21 @@ function MIDI.Parser.parseTrack(self)
 	if self.error then return; end
 
 	local track = {
-		eventCount = 0;
+		eventCount = length;
 		events = {};
 	};
 
 	local iEnd = self.i + length;
 	while self.i < iEnd do
-		self:parseEvent(track.events);
+		table.insert(track.events, self:parseEvent());
 		if self.error then return; end
-
-		track.eventCount = track.eventCount + 1;
 	end
 
 	self:check(track.eventCount > 0, "Track chunk contains 0 events");
 	table.insert(self.result.tracks, track);
 end
 
-function MIDI.Parser.parseEvent(self, eventList)
+function MIDI.Parser.parseEvent(self) --> expected event
 	local deltaTime = self:readVarLen();
 
 	if (self:peek(1):byte() > 127) then
@@ -112,28 +112,32 @@ function MIDI.Parser.parseEvent(self, eventList)
 	local eventType = nil;
 	local length = nil;
 
-	local inRange = function(x,a,b) return a <= x and x <= b; end;
-	if     inRange(self.status, 0x80, 0xEF) then eventType = "Midi";
-	elseif inRange(self.status, 0xF0, 0xF0) then eventType = "SysEx";
-	elseif inRange(self.status, 0xFF, 0xFF) then eventType = "Meta";
+	if     self.status >= 0x80
+	and    self.status <= 0xEF then eventType = "Midi";
+	elseif self.status == 0xF0 then eventType = "SysEx";
+	elseif self.status == 0xF7 then eventType = "SysEx";
+	elseif self.status == 0xFF then eventType = "Meta";
 	end
+
 	self:check(eventType ~= nil, "Unknown status byte");
 	if self.error then return; end
 
 	local length = MIDI.statusLength[self.status//16];
 	if length == nil then
-		if eventType == "Meta" then eventType = eventType .. self:read(1); end
+		if eventType == "Meta" then
+			eventType = eventType .. self:read(1);
+		end
 		length = self:readVarLen();
 	end
 
 	local data = self:read(length);
 
-	table.insert(eventList, {
+	return {
 		deltaTime = deltaTime;
 		type = eventType;
 		status = self.status;
 		data = data;
-	});
+	};
 end
 
 

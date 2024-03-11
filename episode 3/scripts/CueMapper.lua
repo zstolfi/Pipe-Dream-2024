@@ -40,7 +40,7 @@ function CueMapper.read(self, midi, instruments) --> expected cue table
 		end
 	end);
 
-	for i,v in pairs(self.result) do
+	for _, v in pairs(self.result) do
 		Util.sort(v, function(a, b)
 			return a.seconds < b.seconds;
 		end);
@@ -68,13 +68,13 @@ function CueMapper.setKeys(self)
 		return {
 			trackSet = (track == "*")
 				and MatchAll
-				or  Util.setFrom({
+				or  Util.Set({
 					tonumber(track:match("^%[(%d+)%]$"))
 					or track
 				});
 			pitchSet = pitches.all
 				and MatchAll
-				or  Util.setFrom(pitches);
+				or  Util.Set(pitches);
 		};
 	end;
 
@@ -97,12 +97,18 @@ function CueMapper.setKeys(self)
 		end
 	end
 
-	for i,v in pairs(self.keyDefs) do
+	for i, _ in pairs(self.keyDefs) do
 		self.result[i] = {};
 	end
 end
 
 function CueMapper.ticksToSec(self, ticks)
+	if self.midi.header.divisionType == "second" then
+		-- SMPTE Midi files do not respond to tempo-change
+		-- events. (Maybe, I don't really have any tests.)
+		return ticks / self.midi.header.tickRate;
+	end
+
 	if not self.tempoPoints.set then
 		self:setTempoPoints();
 		self.tempoPoints.set = true;
