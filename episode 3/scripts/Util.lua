@@ -49,20 +49,22 @@ function Util.sort(t, less)
 end
 
 --[[ Table Query ]]-------------------------------------------------------------
-function Util.tableEqual(t, u) --> bool
-	local function isomorphic(a,b)
-		for i,v in pairs(a) do
-			local w = b[i];
-			if (type(v) ~= type(w))
-			or (type(v) ~= "table" and not Util.equal(v,w))
-			or (type(v) == "table" and not Util.tableEqual(v,w)) then
-				return false;
-			end
+function Util.tableSubset(t, u) --> bool
+	for i,v in pairs(t) do
+		local w = u[i];
+		if (type(v) ~= type(w))
+		or (type(v) ~= "table" and not Util.equal(v,w))
+		or (type(v) == "table" and not Util.tableEqual(v,w)) then
+			return false;
 		end
-		return true;
 	end
+	return true;
+end
 
-	return #t == #u and isomorphic(t, u) and isomorphic(u,t);
+function Util.tableEqual(t, u) --> bool
+	return #t == #u -- #{1,2,3,[5]=5} == 3 but #{1,2,3,4,5} == 5
+	and    Util.tableSubset(t, u)
+	and    Util.tableSubset(u, t);
 end
 
 -- https://en.cppreference.com/w/cpp/algorithm/all_any_none_of#Notes

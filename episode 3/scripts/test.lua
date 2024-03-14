@@ -5,7 +5,7 @@ end
 function floatEqual(a,b) return a - b < 0.001 end
 
 function checkInstances(instances)
-	for path, type in pairs(instances) do
+	for path, T in pairs(instances) do
 		local instance = game;
 		-- Iterate through everything between the .'s
 		for name in path:gmatch("[^%.]+") do
@@ -13,34 +13,34 @@ function checkInstances(instances)
 			check(instance ~= nil
 			,     string.format("Missing %s.", path));
 		end
-		check(instance:IsA(type)
-		,     string.format("Missing %s : %s.", path, type));
+		check(instance:IsA(T)
+		,     string.format("Missing %s : %s.", path, T));
 	end
 end
 
 function checkExistence(t, members)
-	for fullPath, type in pairs(members) do
+	for fullPath, T in pairs(members) do
 		-- Ignore the name of 't' itself.
 		local path = fullPath:match("^[^%.]+%.(.+)");
 
 		local member = t;
 		for name in path:gmatch("[^%.]+") do
-			member = t[name];
-			check(member ~= nil and type(member) == type
+			member = member[name];
+			check(member ~= nil
 			,     string.format("Missing %s.", path));
 		end
-		check(type(member) == type
-		,     string.format("Missing %s : %s.", path, type));
+		check(type(member) == T
+		,     string.format("Missing %s : %s.", path, T));
 	end
 end
 
 --[[ Object Tree / Class Checks ]]----------------------------------------------
 checkInstances({
-	["Workspace.scripts"]   = "Folder",
-	["Workspace.Util"]      = "ModuleScript",
-	["Workspace.Type"]      = "ModuleScript",
-	["Workspace.MIDI"]      = "ModuleScript",
-	["Workspace.CueMapper"] = "ModuleScript",
+	["Workspace.scripts"]           = "Folder",
+	["Workspace.scripts.Util"]      = "ModuleScript",
+	["Workspace.scripts.Type"]      = "ModuleScript",
+	["Workspace.scripts.MIDI"]      = "ModuleScript",
+	["Workspace.scripts.CueMapper"] = "ModuleScript",
 });
 
 --[[ Util Checks ]]-------------------------------------------------------------
@@ -91,8 +91,8 @@ end
 
 do -- deepCopy
 	local cases = {
-		[{ {} }] == true,
-		[{ {1,2,3,{4,5}, size = 23, pitch = 0.24, {{42}}} }] == true,
+		[{ {} }] = true,
+		[{ {1,2,3,{4,5}, size = 23, pitch = 0.24, {{42}}} }] = true,
 	};
 
 	for args, result in pairs(cases) do
@@ -123,7 +123,7 @@ do -- sort
 	};
 
 	for args, result in pairs(cases) do
-		check(Util.tableEqual(Util.sort(unpack(args)))
+		check(Util.tableEqual(Util.sort(unpack(args)), result)
 		,     "Util.tableEqual");
 	end
 end
@@ -178,7 +178,7 @@ do -- Set constructor
 	};
 
 	for args, result in pairs(cases) do
-		check(Util.tableEqual(Util.set(unpack(args)), result)
+		check(Util.tableEqual(Util.Set(unpack(args)), result)
 		,     "Util.Set");
 	end
 end
@@ -208,11 +208,11 @@ end
 
 do -- parseUint
 	local cases = {
-		[{ ""                 }] = nil
-		[{ "\0"               }] = 0
-		[{ "\x10\x00"         }] = 0x1000
-		[{ "\xFF\xFF"         }] = 0xFFFF
-		[{ "\xFF\xFF\xFF\xFF" }] = 0xFFFFFFFF
+		[{ ""                 }] = nil,
+		[{ "\0"               }] = 0,
+		[{ "\x10\x00"         }] = 0x1000,
+		[{ "\xFF\xFF"         }] = 0xFFFF,
+		[{ "\xFF\xFF\xFF\xFF" }] = 0xFFFFFFFF,
 	};
 
 	for args, result in pairs(cases) do
@@ -223,20 +223,20 @@ end
 
 do -- parseSint
 	local cases = {
-		[{ ""                 }] = nil
-		[{ "\0"               }] = 0
-		[{ "\x7F"             }] = 127
-		[{ "\x80"             }] = -128
-		[{ "\xFF"             }] = -1
-		[{ "\x7F\xFF"         }] = 0x7FFF
-		[{ "\x80\x00"         }] = -0x8000
-		[{ "\x80\x01"         }] = -0x7FFF
-		[{ "\xFF\xFF"         }] = -1
-		[{ "\x00\x00\x00\x00" }] = 0
-		[{ "\x76\x54\x32\x10" }] = 0x76543210
-		[{ "\x7F\xFF\xFF\xFF" }] = 0x7FFFFFFF
-		[{ "\x80\x00\x00\x00" }] = -0x80000000
-		[{ "\xFF\xFF\xFF\xFF" }] = -1
+		[{ ""                 }] = nil,
+		[{ "\0"               }] = 0,
+		[{ "\x7F"             }] = 127,
+		[{ "\x80"             }] = -128,
+		[{ "\xFF"             }] = -1,
+		[{ "\x7F\xFF"         }] = 0x7FFF,
+		[{ "\x80\x00"         }] = -0x8000,
+		[{ "\x80\x01"         }] = -0x7FFF,
+		[{ "\xFF\xFF"         }] = -1,
+		[{ "\x00\x00\x00\x00" }] = 0,
+		[{ "\x76\x54\x32\x10" }] = 0x76543210,
+		[{ "\x7F\xFF\xFF\xFF" }] = 0x7FFFFFFF,
+		[{ "\x80\x00\x00\x00" }] = -0x80000000,
+		[{ "\xFF\xFF\xFF\xFF" }] = -1,
 	};
 
 	for args, result in pairs(cases) do
@@ -280,292 +280,195 @@ and   MIDI.statusLength[0xD] == 1
 and   MIDI.statusLength[0xE] == 2
 ,     "MIDI.statusLength");
 
--- MIDI.Parser.peek
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "abc";
-	local b = parser:peek(1);
-	return b == "a" and parser.i == 1;
-end) (), "MIDI.Parser.peek");
+do -- MIDI.Parser:peek
+	local cases = {
+		[{ "abc", 0 }] = {""   , {i = 1}},
+		[{ "abc", 1 }] = {"a"  , {i = 1}},
+		[{ "abc", 3 }] = {"abc", {i = 1}},
+	};
 
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "abc";
-	local b = parser:peek(3);
-	return b == "abc" and parser.i == 1;
-end) (), "MIDI.Parser.peek");
+	for args, result in pairs(cases) do
+		local parser = Type.new(MIDI.Parser);
+		parser.bytes = args[1];
+		local b = parser:peek(args[2]);
+		check(b == result[1] and Util.tableSubset(result[2], parser)
+		,     "MIDI.Parser:peek");
+	end
+end
 
--- MIDI.Parser.read
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "abc";
-	local b = parser:read(1);
-	return b == "a" and parser.i == 2;
-end) (), "MIDI.Parser.read");
+do -- MIDI.Parser:read
+	local cases = {
+		[{ "abc", 0 }] = {""   , {i = 1}},
+		[{ "abc", 1 }] = {"a"  , {i = 2}},
+		[{ "abc", 3 }] = {"abc", {i = 4}},
+	};
 
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "abc";
-	local b = parser:read(3);
-	return b == "abc" and parser.i == 4;
-end) (), "MIDI.Parser.read");
+	for args, result in pairs(cases) do
+		local parser = Type.new(MIDI.Parser);
+		parser.bytes = args[1];
+		local b = parser:read(args[2]);
+		check(b == result[1] and Util.tableSubset(result[2], parser)
+		,     "MIDI.Parser:read");
+	end
+end
 
--- MIDI.Parser.readVarLen
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "\x00";
-	local n = parser:readVarLen();
-	return n == 0x00000000 and parser.i == 2;
-end) (), "MIDI.Parser.readVarLen");
+do -- MIDI.Parser:readVarLen
+	local cases = {
+		[{ "\x00"             }] = {0x00000000,  {i = 2}},
+		[{ "\x40"             }] = {0x00000040,  {i = 2}},
+		[{ "\x7F"             }] = {0x0000007F,  {i = 2}},
+		[{ "\x81\x00"         }] = {0x00000080,  {i = 3}},
+		[{ "\xC0\x00"         }] = {0x00002000,  {i = 3}},
+		[{ "\xFF\x7F"         }] = {0x00003FFF,  {i = 3}},
+		[{ "\x81\x80\x00"     }] = {0x00004000,  {i = 4}},
+		[{ "\xC0\x80\x00"     }] = {0x00100000,  {i = 4}},
+		[{ "\xFF\xFF\x7F"     }] = {0x001FFFFF,  {i = 4}},
+		[{ "\x81\x80\x80\x00" }] = {0x00200000,  {i = 5}},
+		[{ "\xC0\x80\x80\x00" }] = {0x08000000,  {i = 5}},
+		[{ "\xFF\xFF\xFF\x7F" }] = {0x0FFFFFFF,  {i = 5}},
+	};
 
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "\x40";
-	local n = parser:readVarLen();
-	return n == 0x00000040 and parser.i == 2;
-end) (), "MIDI.Parser.readVarLen");
+	for args, result in pairs(cases) do
+		local parser = Type.new(MIDI.Parser);
+		parser.bytes = args[1];
+		local b = parser:readVarLen();
+		check(b == result[1] and Util.tableSubset(result[2], parser)
+		,     "MIDI.Parser:readVarLen"); 
+	end
+end
 
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "\x7F";
-	local n = parser:readVarLen();
-	return n == 0x0000007F and parser.i == 2;
-end) (), "MIDI.Parser.readVarLen");
+do -- MIDI.Parser:parseTickRate
+	local enc = function(fps, div) return -256*fps + div; end;
 
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "\x81\x00";
-	local n = parser:readVarLen();
-	return n == 0x00000080 and parser.i == 3;
-end) (), "MIDI.Parser.readVarLen");
+	local cases = {
+		[{ 0x0001 }] = {1    , "1/4 note"},
+		[{ 0x0060 }] = {96   , "1/4 note"},
+		[{ 0x01E0 }] = {480  , "1/4 note"},
+		[{ 0x7FFF }] = {32767, "1/4 note"},
+		[{ enc(24, 1)   }] = {24        , "second"},
+		[{ enc(25, 1)   }] = {25        , "second"},
+		[{ enc(30, 1)   }] = {30        , "second"},
+		[{ enc(29, 1)   }] = {30/1.001  , "second"},
+		[{ enc(24, 25)  }] = {600       , "second"},
+		[{ enc(25, 24)  }] = {600       , "second"},
+		[{ enc(30, 20)  }] = {600       , "second"},
+		[{ enc(29, 20)  }] = {600/1.001 , "second"},
+		[{ enc(25, 40)  }] = {1000      , "second"},
+		[{ enc(24, 255) }] = {6120      , "second"},
+		[{ enc(25, 255) }] = {6375      , "second"},
+		[{ enc(30, 255) }] = {7650      , "second"},
+		[{ enc(29, 255) }] = {7650/1.001, "second"},
+	};
 
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "\xC0\x00";
-	local n = parser:readVarLen();
-	return n == 0x00002000 and parser.i == 3;
-end) (), "MIDI.Parser.readVarLen");
+	for args, result in pairs(cases) do
+		local parser = Type.new(MIDI.Parser);
+		check(Util.tableEqual({parser:parseTickRate(unpack(args))}, result)
+		,     "MIDI.Parser:parseTickRate");
+	end
+end
 
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "\xFF\x7F";
-	local n = parser:readVarLen();
-	return n == 0x00003FFF and parser.i == 3;
-end) (), "MIDI.Parser.readVarLen");
+do -- MIDI.Parser:parseHeader
+	local cases = {
+		[{ "MThd".."\0\0\0\6".."\0\1".."\0\1".."\x01\xE0" }] = {
+			format = 1;
+			trackCount = 1;
+			tickRate = 480;
+			divisionType = "1/4 note";
+		},
+		[{ "MThd".."\0\0\0\6".."\0\1".."\xFF\xFF".."\x7F\xFF" }] = {
+			format = 1;
+			trackCount = 0xFFFF;
+			tickRate = 0x7FFF;
+			divisionType = "1/4 note";
+		},
+		[{ "QSCV".."\0\0\0\6".."\0\1".."\0\1".."\x01\xE0" }] = nil,
+		[{ "MThd".."\1\2\3\4".."\0\1".."\0\1".."\x01\xE0" }] = nil,
+		[{ "MThd".."\0\0\0\6".."\0\4".."\0\1".."\x01\xE0" }] = nil,
+		[{ "MThd".."\0\0\0\6".."\0\1".."\0\0".."\x01\xE0" }] = nil,
+		[{ "MThd".."\0\0\0\6".."\0\1".."\0\1".."\x00\x00" }] = nil,
+		[{ "MThd".."\0\0\0\6".."\0\1".."\0\1".."\xE8\x00" }] = nil,
+		[{ "MThd".."\0\0\0\6".."\0\1".."\0\1".."\xE7\x00" }] = nil,
+		[{ "MThd".."\0\0\0\6".."\0\1".."\0\1".."\xE3\x00" }] = nil,
+		[{ "MThd".."\0\0\0\6".."\0\1".."\0\1".."\xE2\x00" }] = nil,
+	};
 
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "\x81\x80\x00";
-	local n = parser:readVarLen();
-	return n == 0x00004000 and parser.i == 4;
-end) (), "MIDI.Parser.readVarLen");
+	for args, result in pairs(cases) do
+		local parser = Type.new(MIDI.Parser);
+		parser.bytes = args[1];
+		parser:parseHeader();
+		check((result ~= nil)
+			and (not error
+			     and Util.tableSubset(result, parser.result.header))
+			or  (not not error)
+		,     "MIDI.Parser:parseHeader");
+	end
+end
 
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "\xC0\x80\x00";
-	local n = parser:readVarLen();
-	return n == 0x00100000 and parser.i == 4;
-end) (), "MIDI.Parser.readVarLen");
+do -- MIDI.Parser:parseTrack
+	local cases = {
+		[{ "MTrk".."\0\0\0\1".."\x00\xFF\x2F\x00" }] = {i = 13, count = 1},
+		[{ "MTrk".."\0\0\0\1".."\x00\x80\60\80"   }] = nil,
+		[{ "xyzw".."\0\0\0\1".."\x00\xFF\x2F\x00" }] = nil,
+		[{ "MTrk".."\0\0\0\0"                     }] = nil,
+	};
 
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "\xFF\xFF\x7F";
-	local n = parser:readVarLen();
-	return n == 0x001FFFFF and parser.i == 4;
-end) (), "MIDI.Parser.readVarLen");
+	for args, result in pairs(cases) do
+		local parser = Type.new(MIDI.Parser);
+		parser.bytes = args[1];
+		parser:parseTrack();
+		check((result ~= nil)
+			and (not error
+			     and Util.tableSubset(result, parser.result.tracks[1]))
+			or  (not not error)
+		,     "MIDI.Parser:parseTrack");
+	end
+end
 
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "\x81\x80\x80\x00";
-	local n = parser:readVarLen();
-	return n == 0x00200000 and parser.i == 5;
-end) (), "MIDI.Parser.readVarLen");
+do -- MIDI.Parser:parseEvent
+	local cases = {
+		[{ "\x00\x80\60\80" }] = {i = 5, event = {
+			deltaTime = 0;
+			type = "Midi";
+			status = 0x80;
+			data = "\60\80";
+		}},
+		[{ "\x00\xF0\x00" }] = {i = 4, event = {
+			deltaTime = 0;
+			type = "SysEx";
+			status = 0xF0;
+			data = "";
+		}},
+		[{ "\x00\xF7\x00" }] = {i = 4, event = {
+			deltaTime = 0;
+			type = "SysEx";
+			status = 0xF7;
+			data = "";
+		}},
+		[{ "\x00\xFF\x01\6Hello!" }] = {i = 11, event = {
+			deltaTime = 0;
+			type = "Meta\x01";
+			status = 0xFF;
+			data = "Hello!";
+		}},
+		[{ "\x00\xFF\x01\7Hello!\0" }] = {i = 12, event = {
+			deltaTime = 0;
+			type = "Meta\x01";
+			status = 0xFF;
+			data = "Hello!";
+		}},
+	};
 
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "\xC0\x80\x80\x00";
-	local n = parser:readVarLen();
-	return n == 0x08000000 and parser.i == 5;
-end) (), "MIDI.Parser.readVarLen");
-
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "\xFF\xFF\xFF\x7F";
-	local n = parser:readVarLen();
-	return n == 0x0FFFFFFF and parser.i == 5;
-end) (), "MIDI.Parser.readVarLen");
-
--- MIDI.Parser.parseTickRate
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	return parser:parseTickRate(0x0060) == 96;
-end) (), "MIDI.Parser.parseTickRate");
-
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	return parser:parseTickRate(0x01E0) == 480;
-end) (), "MIDI.Parser.parseTickRate");
-
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	return parser:parseTickRate(0x0001) == 1;
-end) (), "MIDI.Parser.parseTickRate");
-
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	return parser:parseTickRate(0x7FFF) == 32767;
-end) (), "MIDI.Parser.parseTickRate");
-
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	local fps, div = 25, 40;
-	return parser:parseTickRate(-256*fps + div) == 1000;
-end) (), "MIDI.Parser.parseTickRate");
-
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	local fps, div = 24, 25;
-	return parser:parseTickRate(-256*fps + div) == 600;
-end) (), "MIDI.Parser.parseTickRate");
-
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	local fps, div = 25, 24;
-	return parser:parseTickRate(-256*fps + div) == 600;
-end) (), "MIDI.Parser.parseTickRate");
-
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	local fps, div = 30, 20;
-	return parser:parseTickRate(-256*fps + div) == 600;
-end) (), "MIDI.Parser.parseTickRate");
-
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	local fps, div = 29, 20;
-	return floatEqual(parser:parseTickRate(-256*fps + div)
-	,                 600/1.001);
-end) (), "MIDI.Parser.parseTickRate");
-
--- MIDI.Parser.parseHeader
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "MThd".."\0\0\0\6".."\0\1".."\0\1".."\x01\xE0";
-	parser:parseHeader();
-	return not parser.error and Util.tableEqual(parser.result.header, {
-		format = 1;
-		trackCount = 1;
-		tickRate = 480;
-		divisionType = "1/4 note";
-	});
-end) (), "MIDI.Parser.parseHeader");
-
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "MThd".."\0\0\0\6".."\0\1".."\xFF\xFF".."\x7F\xFF";
-	parser:parseHeader();
-	return not parser.error and Util.tableEqual(parser.result.header, {
-		format = 1;
-		trackCount = 0xFFFF;
-		tickRate = 0x7FFF;
-		divisionType = "1/4 note";
-	});
-end) (), "MIDI.Parser.parseHeader");
-
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "QSCV".."\0\0\0\6".."\0\1".."\0\1".."\x01\xE0";
-	parser:parseHeader();
-	return parser.error;
-end) (), "MIDI.Parser.parseHeader");
-
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "MThd".."\0\0\4\2".."\0\1".."\0\1".."\x01\xE0";
-	parser:parseHeader();
-	return parser.error;
-end) (), "MIDI.Parser.parseHeader");
-
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "MThd".."\0\0\0\6".."\0\4".."\0\1".."\x01\xE0";
-	parser:parseHeader();
-	return parser.error;
-end) (), "MIDI.Parser.parseHeader");
-
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "MThd".."\0\0\0\6".."\0\1".."\0\1".."\x00\x00";
-	parser:parseHeader();
-	return parser.error;
-end) (), "MIDI.Parser.parseHeader");
-
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "MThd".."\0\0\0\6".."\0\1".."\0\1".."\xE2\x00";
-	parser:parseHeader();
-	return parser.error;
-end) (), "MIDI.Parser.parseHeader");
-
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "MThd".."\0\0\0\6".."\0\1".."\0\0".."\x01\xE0";
-	parser:parseHeader();
-	return parser.error;
-end) (), "MIDI.Parser.parseHeader");
-
--- MIDI.Parser.parseTrack
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "MTrk".."\0\0\0\1".."\x00\xFF\x2F\x00";
-	parser:parseTrack();
-	return not parser.error
-	and    parser.i == 1 + 12
-	and    parser.result.tracks[1].eventCount == 1
-	and    #parser.result.tracks[1].events == 1;
-end) (), "MIDI.Parser.parseTrack");
-
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "xyzw".."\0\0\0\1".."\x00\xFF\x2F\x00";
-	parser:parseTrack();
-	return parser.error;
-end) (), "MIDI.Parser.parseTrack");
-
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "MTrk".."\0\0\0\0";
-	parser:parseTrack();
-	return parser.error;
-end) (), "MIDI.Parser.parseTrack");
-
--- MIDI.Parser.parseEvent
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "\x00\x80\60\80";
-	local e = parser:parseEvent();
-	return not parser.error
-	and    parser.i == 1 + 4
-	and    Util.tableEqual(e, {
-		deltaTime = 0;
-		type = "Midi";
-		status = 0x80;
-		data = "\60\80";
-	});
-end) (), "MIDI.Parser.parseTrack");
-
-check((function()
-	local parser = Type.new(MIDI.Parser);
-	parser.bytes = "\x00\x80\60\80";
-	local e = parser:parseEvent();
-	return not parser.error
-	and    parser.i == 1 + 4
-	and    Util.tableEqual(e, {
-		deltaTime = 0;
-		type = "Midi";
-		status = 0x80;
-		data = "\60\80";
-	});
-end) (), "MIDI.Parser.parseTrack");
+	for args, result in pairs(cases) do
+		local parser = Type.new(MIDI.Parser);
+		parser.bytes = args[1];
+		local e = parser:parseEvent();
+		check((result ~= nil)
+			and (not error
+			     and parser.i == result.i
+			     and Util.tableSubset(result.event, e))
+			or  (not not error)
+		,     "MIDI.Parser:parseEvent");
+	end
+end
 
 return nil;

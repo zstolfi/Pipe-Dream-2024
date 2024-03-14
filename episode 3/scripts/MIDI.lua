@@ -42,7 +42,7 @@ function MIDI.Parser.parseHeader(self)
 	local format    = self:readUint(2);
 	local ntrks     = self:readUint(2);
 	local division  = self:readSint(2);
-	local tickRate  = self:parseTickRate(division);
+	local tickRate, divType = self:parseTickRate(division);
 
 	self:check(chunkType == "MThd"  , "Input file is not a MIDI file");
 	self:check(length    == 6       , "Invalid header length");
@@ -56,13 +56,13 @@ function MIDI.Parser.parseHeader(self)
 		format = format;
 		trackCount = ntrks;
 		tickRate = tickRate;
-		divisionType = (division >= 0) and "1/4 note" or "second";
+		divisionType = divType;
 	};
 end
 
 function MIDI.Parser.parseTickRate(self, division)
 	if division >= 0 then
-		return division;
+		return division, "1/4 note";
 	else
 		local fps = nil;
 
@@ -72,9 +72,10 @@ function MIDI.Parser.parseTickRate(self, division)
 		elseif division//256 == -30 then fps = 30;
 		end
 		self:check(fps ~= nil, "Unknown SMPTE format");
+		if self.error then return; end
 
 		-- TODO: Verify (signed % unsigned) is safe.
-		return (division % 256) * fps;
+		return (division % 256) * fps, "second";
 	end
 end
 
