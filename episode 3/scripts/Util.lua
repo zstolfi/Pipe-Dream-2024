@@ -1,5 +1,7 @@
 local Util = {};
 
+function Util.inRange(x, a, b) return a <= x and x <= b; end
+
 --[[ Function Objects ]]--------------------------------------------------------
 function Util.less (a, b) return a <  b; end
 function Util.equal(a, b) return a == b; end

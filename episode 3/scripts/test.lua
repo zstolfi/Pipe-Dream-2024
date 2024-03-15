@@ -417,9 +417,9 @@ end
 
 do -- MIDI.Parser:parseTrack
 	local cases = {
-		[{ "MTrk".."\0\0\0\1".."\x00\xFF\x2F\x00" }] = {i = 13, count = 1},
-		[{ "MTrk".."\0\0\0\1".."\x00\x80\60\80"   }] = Invalid,
-		[{ "xyzw".."\0\0\0\1".."\x00\xFF\x2F\x00" }] = Invalid,
+		[{ "MTrk".."\0\0\0\4".."\x00\xFF\x2F\x00" }] = {i = 13, count = 1},
+		[{ "MTrk".."\0\0\0\4".."\x00\x80\60\80"   }] = Invalid,
+		[{ "xyzw".."\0\0\0\4".."\x00\xFF\x2F\x00" }] = Invalid,
 		[{ "MTrk".."\0\0\0\0"                     }] = Invalid,
 	};
 
@@ -432,7 +432,6 @@ do -- MIDI.Parser:parseTrack
 			     and parser.i == result.i
 			     and #parser.result.tracks == 1
 			     and #parser.result.tracks[1].events == result.count)
-			     and parser.result.tracks[1].eventCount == result.count
 			or  (not not parser.error)
 		,     "MIDI.Parser:parseTrack", args);
 	end

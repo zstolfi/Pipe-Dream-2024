@@ -87,17 +87,25 @@ function MIDI.Parser.parseTrack(self)
 	if self.error then return; end
 
 	local track = {
-		eventCount = length;
 		events = {};
 	};
 
 	local iEnd = self.i + length;
 	while self.i < iEnd do
-		table.insert(track.events, self:parseEvent());
+		local event = self:parseEvent();
+		local isLast = self.i == iEnd;
+		if isLast then
+			self:check(event.type == "Meta\x2F"
+			,     "Track doesn't end with End of Track event.");
+		else
+			self:check(event.Type ~= "Meta\x2F"
+			,     "Track contains premature End of Track event.");
+		end
+		table.insert(track.events, event);
 		if self.error then return; end
 	end
 
-	self:check(track.eventCount > 0, "Track chunk contains 0 events");
+	self:check(#track.events > 0, "Track chunk contains 0 events");
 	table.insert(self.result.tracks, track);
 end
 
@@ -132,6 +140,9 @@ function MIDI.Parser.parseEvent(self) --> expected event
 	end
 
 	local data = self:read(length);
+	if self:isText(eventType) then
+		data = data:match("^([^%z]*)");
+	end
 
 	return {
 		deltaTime = deltaTime;
@@ -139,6 +150,10 @@ function MIDI.Parser.parseEvent(self) --> expected event
 		status = self.status;
 		data = data;
 	};
+end
+
+function MIDI.Parser.isText(self, eventType)
+	return eventType:match("Meta.") and Util.inRange(eventType:byte(5,5), 1, 7)
 end
 
 
