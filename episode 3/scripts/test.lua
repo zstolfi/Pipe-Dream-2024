@@ -1,8 +1,16 @@
-function check(condition, message)
-	if not condition then error(message); end
+function check(condition, ...)
+	if not condition then
+		warn("~~~~~~~~~~~~ ERROR ~~~~~~~~~~~~");
+		print(...);
+		warn("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+		error("Execution halted.");
+	end
 end
 
-function floatEqual(a,b) return a - b < 0.001 end
+-- '[{ args }] = nil' doesn't work, so we use '[{ args }] = Invalid'
+Invalid = {};
+
+function floatEqual(a,b) return a - b < 0.000001 end
 
 function checkInstances(instances)
 	for path, T in pairs(instances) do
@@ -85,7 +93,7 @@ do -- tableEqual
 
 	for args, result in pairs(cases) do
 		check(Util.tableEqual(unpack(args)) == result
-		,     "Util.tableEqual");
+		,     "Util.tableEqual", args);
 	end
 end
 
@@ -99,7 +107,7 @@ do -- deepCopy
 		local t = unpack(args);
 		local u = Util.deepCopy(t);
 		check(t ~= u and Util.tableEqual(t,u)
-		,     "Util.deepCopy");
+		,     "Util.deepCopy", args);
 	end
 end
 
@@ -124,7 +132,7 @@ do -- sort
 
 	for args, result in pairs(cases) do
 		check(Util.tableEqual(Util.sort(unpack(args)), result)
-		,     "Util.tableEqual");
+		,     "Util.tableEqual", args);
 	end
 end
 
@@ -164,7 +172,7 @@ do -- findUntil
 
 	for args, result in pairs(cases) do
 		check(Util.findUntil(unpack(args)) == result
-		,     "Util.findUntil");
+		,     "Util.findUntil", args);
 	end
 end
 
@@ -179,7 +187,7 @@ do -- Set constructor
 
 	for args, result in pairs(cases) do
 		check(Util.tableEqual(Util.Set(unpack(args)), result)
-		,     "Util.Set");
+		,     "Util.Set", args);
 	end
 end
 
@@ -192,23 +200,24 @@ do -- parseBase64
 		[{ "TVRoZA=="     }] = "MThd",
 		[{ "TVRoZAAAAAY=" }] = "MThd\0\0\0\6",
 
-		[{ "a"      }] = nil,
-		[{ "="      }] = nil,
-		[{ "==="    }] = nil,
-		[{ "12=456" }] = nil,
-		[{ "a"      }] = nil,
-		[{ "$"      }] = nil,
+		[{ "a"      }] = Invalid,
+		[{ "="      }] = Invalid,
+		[{ "==="    }] = Invalid,
+		[{ "12=456" }] = Invalid,
+		[{ "a"      }] = Invalid,
+		[{ "$"      }] = Invalid,
 	};
 
 	for args, result in pairs(cases) do
+		if result == Invalid then result = nil; end
 		check(Util.parseBase64(unpack(args)) == result
-		,     "Util.parseBase64");
+		,     "Util.parseBase64", args);
 	end
 end
 
 do -- parseUint
 	local cases = {
-		[{ ""                 }] = nil,
+		[{ ""                 }] = Invalid,
 		[{ "\0"               }] = 0,
 		[{ "\x10\x00"         }] = 0x1000,
 		[{ "\xFF\xFF"         }] = 0xFFFF,
@@ -216,14 +225,15 @@ do -- parseUint
 	};
 
 	for args, result in pairs(cases) do
+		if result == Invalid then result = nil; end
 		check(Util.parseUint(unpack(args)) == result
-		,     "Util.parseUint");
+		,     "Util.parseUint", args);
 	end
 end
 
 do -- parseSint
 	local cases = {
-		[{ ""                 }] = nil,
+		[{ ""                 }] = Invalid,
 		[{ "\0"               }] = 0,
 		[{ "\x7F"             }] = 127,
 		[{ "\x80"             }] = -128,
@@ -240,8 +250,9 @@ do -- parseSint
 	};
 
 	for args, result in pairs(cases) do
+		if result == Invalid then result = nil; end
 		check(Util.parseSint(unpack(args)) == result
-		,     "Util.parseSint");
+		,     "Util.parseSint", args);
 	end
 end
 
@@ -292,7 +303,7 @@ do -- MIDI.Parser:peek
 		parser.bytes = args[1];
 		local b = parser:peek(args[2]);
 		check(b == result[1] and Util.tableSubset(result[2], parser)
-		,     "MIDI.Parser:peek");
+		,     "MIDI.Parser:peek", args);
 	end
 end
 
@@ -308,7 +319,7 @@ do -- MIDI.Parser:read
 		parser.bytes = args[1];
 		local b = parser:read(args[2]);
 		check(b == result[1] and Util.tableSubset(result[2], parser)
-		,     "MIDI.Parser:read");
+		,     "MIDI.Parser:read", args);
 	end
 end
 
@@ -333,7 +344,7 @@ do -- MIDI.Parser:readVarLen
 		parser.bytes = args[1];
 		local b = parser:readVarLen();
 		check(b == result[1] and Util.tableSubset(result[2], parser)
-		,     "MIDI.Parser:readVarLen"); 
+		,     "MIDI.Parser:readVarLen", args); 
 	end
 end
 
@@ -363,7 +374,7 @@ do -- MIDI.Parser:parseTickRate
 	for args, result in pairs(cases) do
 		local parser = Type.new(MIDI.Parser);
 		check(Util.tableEqual({parser:parseTickRate(unpack(args))}, result)
-		,     "MIDI.Parser:parseTickRate");
+		,     "MIDI.Parser:parseTickRate", args);
 	end
 end
 
@@ -381,46 +392,49 @@ do -- MIDI.Parser:parseHeader
 			tickRate = 0x7FFF;
 			divisionType = "1/4 note";
 		},
-		[{ "QSCV".."\0\0\0\6".."\0\1".."\0\1".."\x01\xE0" }] = nil,
-		[{ "MThd".."\1\2\3\4".."\0\1".."\0\1".."\x01\xE0" }] = nil,
-		[{ "MThd".."\0\0\0\6".."\0\4".."\0\1".."\x01\xE0" }] = nil,
-		[{ "MThd".."\0\0\0\6".."\0\1".."\0\0".."\x01\xE0" }] = nil,
-		[{ "MThd".."\0\0\0\6".."\0\1".."\0\1".."\x00\x00" }] = nil,
-		[{ "MThd".."\0\0\0\6".."\0\1".."\0\1".."\xE8\x00" }] = nil,
-		[{ "MThd".."\0\0\0\6".."\0\1".."\0\1".."\xE7\x00" }] = nil,
-		[{ "MThd".."\0\0\0\6".."\0\1".."\0\1".."\xE3\x00" }] = nil,
-		[{ "MThd".."\0\0\0\6".."\0\1".."\0\1".."\xE2\x00" }] = nil,
+		[{ "QSCV".."\0\0\0\6".."\0\1".."\0\1".."\x01\xE0" }] = Invalid,
+		[{ "MThd".."\1\2\3\4".."\0\1".."\0\1".."\x01\xE0" }] = Invalid,
+		[{ "MThd".."\0\0\0\6".."\0\4".."\0\1".."\x01\xE0" }] = Invalid,
+		[{ "MThd".."\0\0\0\6".."\0\1".."\0\0".."\x01\xE0" }] = Invalid,
+		[{ "MThd".."\0\0\0\6".."\0\1".."\0\1".."\x00\x00" }] = Invalid,
+		[{ "MThd".."\0\0\0\6".."\0\1".."\0\1".."\xE8\x00" }] = Invalid,
+		[{ "MThd".."\0\0\0\6".."\0\1".."\0\1".."\xE7\x00" }] = Invalid,
+		[{ "MThd".."\0\0\0\6".."\0\1".."\0\1".."\xE3\x00" }] = Invalid,
+		[{ "MThd".."\0\0\0\6".."\0\1".."\0\1".."\xE2\x00" }] = Invalid,
 	};
 
 	for args, result in pairs(cases) do
 		local parser = Type.new(MIDI.Parser);
 		parser.bytes = args[1];
 		parser:parseHeader();
-		check((result ~= nil)
-			and (not error
+		check((result ~= Invalid)
+			and (not parser.error
 			     and Util.tableSubset(result, parser.result.header))
-			or  (not not error)
-		,     "MIDI.Parser:parseHeader");
+			or  (not not parser.error)
+		,     "MIDI.Parser:parseHeader", args);
 	end
 end
 
 do -- MIDI.Parser:parseTrack
 	local cases = {
 		[{ "MTrk".."\0\0\0\1".."\x00\xFF\x2F\x00" }] = {i = 13, count = 1},
-		[{ "MTrk".."\0\0\0\1".."\x00\x80\60\80"   }] = nil,
-		[{ "xyzw".."\0\0\0\1".."\x00\xFF\x2F\x00" }] = nil,
-		[{ "MTrk".."\0\0\0\0"                     }] = nil,
+		[{ "MTrk".."\0\0\0\1".."\x00\x80\60\80"   }] = Invalid,
+		[{ "xyzw".."\0\0\0\1".."\x00\xFF\x2F\x00" }] = Invalid,
+		[{ "MTrk".."\0\0\0\0"                     }] = Invalid,
 	};
 
 	for args, result in pairs(cases) do
 		local parser = Type.new(MIDI.Parser);
 		parser.bytes = args[1];
 		parser:parseTrack();
-		check((result ~= nil)
-			and (not error
-			     and Util.tableSubset(result, parser.result.tracks[1]))
-			or  (not not error)
-		,     "MIDI.Parser:parseTrack");
+		check((result ~= Invalid)
+			and (not parser.error
+			     and parser.i == result.i
+			     and #parser.result.tracks == 1
+			     and #parser.result.tracks[1].events == result.count)
+			     and parser.result.tracks[1].eventCount == result.count
+			or  (not not parser.error)
+		,     "MIDI.Parser:parseTrack", args);
 	end
 end
 
@@ -462,12 +476,12 @@ do -- MIDI.Parser:parseEvent
 		local parser = Type.new(MIDI.Parser);
 		parser.bytes = args[1];
 		local e = parser:parseEvent();
-		check((result ~= nil)
-			and (not error
+		check((result ~= Invalid)
+			and (not parser.error
 			     and parser.i == result.i
 			     and Util.tableSubset(result.event, e))
-			or  (not not error)
-		,     "MIDI.Parser:parseEvent");
+			or  (not not parser.error)
+		,     "MIDI.Parser:parseEvent", args);
 	end
 end
 
