@@ -7,6 +7,15 @@ function Util.less (a, b) return a <  b; end
 function Util.equal(a, b) return a == b; end
 function Util.identity(a) return a;      end
 
+--[[ String Operations ]]-------------------------------------------------------
+function Util.nullTerminate(str)
+	return str:match("^(%Z*)");
+end
+
+function Util.trimWhitespace(str)
+	return str:match("^%s*(.-)%s*$");
+end
+
 --[[ Table Operations ]]--------------------------------------------------------
 function Util.deepCopy(T)
 	local result = {};
@@ -16,38 +25,14 @@ function Util.deepCopy(T)
 	return result;
 end
 
--- https://en.wikipedia.org/wiki/Quicksort#Lomuto_partition_scheme
 function Util.sort(t, less)
-	local function swap(i, j)
-		local temp = t[i];
-		t[i] = t[j];
-		t[j] = temp;
-	end
+	table.sort(t, less);
+	return t; -- Return a reference.
+end
 
-	local function parition(lo, hi)
-		local mid = t[hi];
-		local i = lo - 1;
-		for j=lo, hi-1 do
-			if less(t[j], mid) then
-				i = i + 1;
-				swap(i, j);
-			end
-		end
-		i = i + 1;
-		swap(i, hi);
-		return i;
-	end
-
-	local function quickSort(lo, hi)
-		if lo >= hi then return; end
-		local pivot = parition(lo, hi);
-		quickSort(lo, pivot-1);
-		quickSort(pivot+1, hi);
-	end
-
-	quickSort(1, #t);
-	-- Return a reference.
-	return t;
+function Util.append(t, x)
+	table.insert(t, x);
+	return t; -- Return a reference.
 end
 
 --[[ Table Query ]]-------------------------------------------------------------
@@ -135,6 +120,43 @@ function Util.Set(t)
 	return set;
 end
 
+function Util.setFlatten(s)
+	local t = {};
+	for i, _ in pairs(s) do
+		if s[i] then
+			Util.append(t, i);
+		end
+	end
+	return t;
+end
+
+Util.universalSet = setmetatable({}, {__index = function() return true ; end});
+Util.emptySet     = setmetatable({}, {__index = function() return false; end});
+
+function Util.setUnion(s, r)
+	if s == Util.universalSet
+	or r == Util.universalSet then
+		return Util.universalSet;
+	end
+
+	local set = {};
+	for i, _ in pairs(s) do if s[i] then set[i] = true; end end
+	for i, _ in pairs(r) do if r[i] then set[i] = true; end end
+	return set;
+end
+
+function Util.setIntersect(s, r)
+	if s == Util.universalSet then return r; end
+	if r == Util.universalSet then return s; end
+
+	local set = {};
+	local search = Util.setUnion(s, r);
+	for i, _ in pairs(search) do
+		if s[i] and r[i] then set[i] = true; end
+	end
+	return set;
+end
+
 --[[ Binary Input ]]------------------------------------------------------------
 function Util.parseBase64(b64) --> expected binary string
 	local Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -156,7 +178,7 @@ function Util.parseBase64(b64) --> expected binary string
 	-- Store each group of 4 bytes in a table.
 	local tuples = {};
 	for i=1, #b64, 4 do
-		tuples[#tuples + 1] = b64:sub(i, i+3);
+		Util.append(tuples, b64:sub(i, i+3));
 	end
 
 	-- Check for correct digits.

@@ -1,15 +1,20 @@
-local testKeyDefs = {
+local testInstruments = {
 	["Piano"] = {type = "range", track = "[1]", {from = 21, to = 108}},
+	["Pn-40"] = {type = "range", track = "[1]", {size = 40}},
+	["Pn-32"] = {type = "range", track = "[1]", {size = 32}},
+	["Pn-27"] = {type = "range", track = "[1]", {size = 27}},
+	["Pn-22"] = {type = "range", track = "[1]", {size = 22}},
+	["Pn-12"] = {type = "range", track = "[1]", {size = 12}},
 	["All"]   = {type = "range", track = "*"  , {from = 0,  to = 127}},
 };
 
-local PipeDreamKeyDefs = {
+local PipeDreamInstruments = {
 	-- Simple key definitions:
-	["Guitar"]  = {type = "range",  track = "Guitar"       , {size = 16}},
+	["Guitar"]  = {type = "range",  track = "Guitar|Banjo" , {size = 16}},
 	["Bells"]   = {type = "range",  track = "Tubular Bells", {size = 10}},
 	["Vibe"]    = {type = "range",  track = "Vibraphone"   , {size = 40}},
 	["Marimba"] = {type = "single", track = "Marimba"      , {all = true}},
-	["Drums"]   = {type = "list",   track = "Drumset", {
+	["Drums"]   = {type = "list",   track = "{10}", {
 		["Bass"] = 36,
 		["Snare"] = 38,
 		["Crash 1"] = 49,
@@ -22,7 +27,7 @@ local PipeDreamKeyDefs = {
 		["Tom 6"] = 50,
 		-- Suckerpinch'd!
 	}},
-	["For-Way"] = {type = "list",   track = "Drumset", {
+	["For-Way"] = {type = "list",   track = "{10}", {
 		["Splash"] = 55,
 		["Cowbell"] = 56,
 		["HiHat Close"] = 42,
@@ -47,4 +52,4 @@ local PipeDreamKeyDefs = {
 	},
 };
 
-return testKeyDefs;
+return testInstruments;
