@@ -69,8 +69,10 @@ function CueMapper.setKeyMaps(self)
 			self.keyMaps[name] = {};
 			for i=1, size do self.keyMaps[name][i] = {}; end
 
+			if #range == 0 then -- Do nothing when there's no notes.
+
 			-- Less notes than keys:
-			if #range < size then
+			elseif #range < size then
 				local span = range[#range] - range[1] + 1;
 				-- The span of notes fit:
 				if span < size then

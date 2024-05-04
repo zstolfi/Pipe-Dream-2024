@@ -3,7 +3,7 @@ require(workspace.Test);
 
 print("Main script starting up ...");
 
-midiName    = "Prelude in C.midi";
+midiName    = "Pipe Dream.midi";
 Type        = require(workspace.scripts.Type);
 MIDI        = require(workspace.scripts.MIDI);
 CueMapper   = require(workspace.scripts.CueMapper);

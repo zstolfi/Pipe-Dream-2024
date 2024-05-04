@@ -1,11 +1,11 @@
 local testInstruments = {
 	["Piano"] = {type = "range", track = "[1]", {from = 21, to = 108}},
+	["All"]   = {type = "range", track = "*"  , {from = 0,  to = 127}},
 	["Pn-40"] = {type = "range", track = "[1]", {size = 40}},
 	["Pn-32"] = {type = "range", track = "[1]", {size = 32}},
 	["Pn-27"] = {type = "range", track = "[1]", {size = 27}},
 	["Pn-22"] = {type = "range", track = "[1]", {size = 22}},
 	["Pn-12"] = {type = "range", track = "[1]", {size = 12}},
-	["All"]   = {type = "range", track = "*"  , {from = 0,  to = 127}},
 };
 
 local PipeDreamInstruments = {
@@ -45,11 +45,11 @@ local PipeDreamInstruments = {
 		type = "single", track = "Tubular Bells", {all = true}
 	},
 	["HiHat-Position"] = {
-		type = "single", track = "Drumset", {42, 44, 46}
+		type = "single", track = "{10}", {42, 44, 46}
 	},
 	["For-Way-Position"] = {
-		type = "single", track = "Drumset", {55, 56, 42, 44, 46, 76, 77}
+		type = "single", track = "{10}", {55, 56, 42, 44, 46, 76, 77}
 	},
 };
 
-return testInstruments;
+return PipeDreamInstruments;
