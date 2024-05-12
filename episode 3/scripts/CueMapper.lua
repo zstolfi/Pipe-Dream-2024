@@ -147,8 +147,8 @@ function CueMapper.setKeys(self)
 			self:makeKeyDef(name, def.track, def[1]);
 
 		elseif def.type == "list" then
-			for key, pitch in pairs(def[1]) do
-				self:makeKeyDef(name ..".".. key, def.track, {pitch});
+			for key, pitches in pairs(def[1]) do
+				self:makeKeyDef(name ..".".. key, def.track, pitches);
 			end
 
 		elseif def.type == "range" then
