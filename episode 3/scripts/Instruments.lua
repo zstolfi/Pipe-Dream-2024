@@ -30,7 +30,7 @@ local PipeDreamInstruments = {
 	["For-Way"] = {type = "list",   track = "{10}", {
 		["Splash"] = {55},
 		["Cowbell"] = {56},
-		["HiHat"] = {42, 44, 46},
+		["HiHat"] = {42, 46},
 		["WBlock Hi"] = {76},
 		["WBlock Lo"] = {77},
 	}},
