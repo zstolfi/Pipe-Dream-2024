@@ -62,10 +62,11 @@ end
 
 function CueMapper.setKeyMaps(self)
 	for name, def in pairs(self.instruments) do
-		if def.type == "range" then
-			local d = def[1];
+		local keys = def.keys;
+		if keys.type == "range" then
+			local d = keys.notes;
 			local size = d.size or d.to - d.from;
-			local range = self:getNoteRange(def.track);
+			local range = self:getNoteRange(keys.track);
 			self.keyMaps[name] = {};
 			for i=1, size do self.keyMaps[name][i] = {}; end
 
@@ -143,17 +144,18 @@ end
 
 function CueMapper.setKeys(self)
 	for name, def in pairs(self.instruments) do
-		if def.type == "single" then
-			self:makeKeyDef(name, def.track, def[1]);
+		local keys = def.keys;
+		if keys.type == "single" then
+			self:makeKeyDef(name, keys.track, keys.notes);
 
-		elseif def.type == "list" then
-			for key, pitches in pairs(def[1]) do
-				self:makeKeyDef(name ..".".. key, def.track, pitches);
+		elseif keys.type == "list" then
+			for key, pitches in pairs(keys.notes) do
+				self:makeKeyDef(name ..".".. key, keys.track, pitches);
 			end
 
-		elseif def.type == "range" then
+		elseif keys.type == "range" then
 			for i, pitches in pairs(self.keyMaps[name]) do
-				self:makeKeyDef(name ..".".. i, def.track, pitches);
+				self:makeKeyDef(name ..".".. i, keys.track, pitches);
 			end
 
 		end
