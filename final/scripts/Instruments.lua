@@ -14,9 +14,29 @@ local PipeDreamInstruments = {
 	["Bells"] = {
 		keys = {type = "range", track = "Tubular Bells", notes = {size = 10}};
 		
-		animate = (function(seconds, cueTrack) end);
+		animate = (function(seconds, cueTrack)
+			local result = {
+				angle = 0;
+				marbles = {};
+			};
+			for _, cue in pairs(cueTrack) do
+				local t = seconds - cue.seconds;
+				result.angle = result.angle
+				+	math.rad(4) * Graph.wave(t, 1.2, 0.3);
+				Util.append(result.marbles, Graph.trajectory(t, {
+					{-0.35, Vector3.new( 0.000, 11.000, 0), 28.083 },
+					{ 0.00, Vector3.new(11.674, 37.716, 0), 35.675 },
+					{ 0.80, Vector3.new( 2.470,  8.651, 0), nil    },
+				})--[[, offset]]);
+			end
+			return result;
+		end);
 
-		apply = (function(params, model) end);
+		apply = (function(params, model)
+			print(params);
+			-- model.bell:SetPrimaryPartCFrame(CFrame.Angles(params.angle, 0, 0));
+			-- print(#params.marbles);
+		end);
 	},
 	["Vibe"] = {
 		keys = {type = "range", track = "Vibraphone", notes = {size = 40}};
