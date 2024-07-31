@@ -35,6 +35,7 @@ function CueMapper.read(self, midi, instruments) --> expected cue table
 					seconds  = self:ticksToSec(ticks),
 					pitch    = note.pitch,
 					velocity = note.velocity,
+					index    = tonumber(keyName:match("%.(%d+)$")),
 				});
 			end
 		end

@@ -20,31 +20,54 @@ local PipeDreamInstruments = {
 				marbles = {};
 			};
 			for _, cue in pairs(cueTrack) do
-				local t = seconds - cue.seconds;
+				local t, i = seconds - cue.seconds, cue.index;
 				result.angle = result.angle
 				+	math.rad(4) * Graph.wave(t, 1.2, 0.3);
 				Util.append(result.marbles, Graph.trajectory(t, {
-					{-0.35, Vector3.new( 0.000, 11.000, 0), 28.083 },
-					{ 0.00, Vector3.new(11.674, 37.716, 0), 35.675 },
-					{ 0.80, Vector3.new( 2.470,  8.651, 0), nil    },
-				})--[[, offset]]);
+					{-0.35, Vector3.new( 0.000, 0, 11.000), 28.073 },
+					{ 0.00, Vector3.new(11.674, 0, 37.716), 34.696 },
+					{ 0.80, Vector3.new( 1.870, 0,  3.400), nil    },
+				}),CFrame.new(-5.003, 0, -18.3) * CFrame.Angles(
+					0, math.rad(Graph.lerp((i-1)/9, -40.5, 40.5)), 0
+				));
 			end
 			return result;
 		end);
 
-		apply = (function(params, model)
-			print(params);
-			-- model.bell:SetPrimaryPartCFrame(CFrame.Angles(params.angle, 0, 0));
-			-- print(#params.marbles);
-		end);
+		apply = (function(params, model) end);
 	},
 	["Vibe"] = {
 		keys = {type = "range", track = "Vibraphone", notes = {size = 40}};
-		Params = {
-			arm1 = 0, arm2 = 0, arm3 = 0;
-			barBounce = 0, barGlow = 0;
-			marbles = {};
-		};
+
+		animate = (function (seconds, cueTrack)
+			local result = {
+				arm1 = 0, arm2 = 0, arm3 = 0;
+				barBounce = 0, barGlow = 0;
+				marbles = {};
+			};
+			for _, cue in pairs(cueTrack) do
+				local t, i = seconds - cue.seconds, cue.index;
+				result.arm1 = result.arm1
+				+	math.rad(3) * Graph.wave(t, 3.1, 1.3);
+				result.arm2 = result.arm2
+				+	math.rad(4) * Graph.wave(t, 2.8, 1.0);
+				result.arm3 = result.arm3
+				+	math.rad(3) * Graph.wave(t, 2.3, 1.5);
+				result.barBounce = result.barBounce
+				+	0.2 * Graph.wave(t,6,2);
+				result.barGlow = result.barGlow
+				+	(t > 0) and 0.8*math.exp(-t/0.2) or 0;
+				Util.append(result.marbles, Graph.trajectory(t, {
+					{-0.935, Vector3.new( 0.000, 0, 11.500), 33.356},
+					{ 0.000, Vector3.new(12.472, 0, 16.347), 25.102},
+					{ 0.768, Vector3.new(22.294, 0, 05.892), nil   },
+				}), CFrame.new(-5.003, 0, -18.3) * CFrame.Angle(
+					0, Graph.lerp((i-1)/39, 1.75*math.pi, -0.25*math.pi), 0
+				));
+			end
+		end);
+
+		apply = (function(params, model) end);
 	},
 	["Marimba"] = {
 		keys = {type = "single", track = "Marimba", notes = {all = true}};
