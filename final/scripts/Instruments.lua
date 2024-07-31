@@ -4,12 +4,40 @@ Graph = require(workspace.scripts.Graph);
 local PipeDreamInstruments = {
 	["Guitar"] = {
 		keys = {type = "range", track = "Guitar|Banjo", notes = {size = 16}};
-		Params = {
-			string1 = 0, holderAngle1 = 0;
-			string2 = 0, holderAngle2 = 0;
-			drumBounce = 0;
-			marbles = {};
-		};
+		
+		animate = (function(seconds, cueTrack)
+			local result = {
+				string1 = 0, holderAngle1 = 0;
+				string2 = 0, holderAngle2 = 0;
+				drumBounce = 0;
+				marbles = {};
+			};
+			for _, cue in pairs(cueTrack) do
+				local t, i = seconds - cue.seconds, cue.index;
+				result.string1 = result.string1
+				+	Graph.wave(t-0.405, 60, 10);
+				result.string2 = result.string1
+				+	Graph.wave(t-0.000, 60, 10);
+				result.holderAngle1 = result.holderAngle1
+				+	math.rad(9) * Graph.wave(t-0.405, 10, 13);
+				result.holderAngle2 = result.holderAngle2
+				+	math.rad(9) * Graph.wave(t-0.000, 10, 13);
+				result.drumBounce = result.drumBounce
+				+	0.2 * Graph.wave(t, 10, 13);
+				Util.append(result.marbles, Graph.trajectory(t, {
+					{-0.817, Vector3.new(39.766, 0, 24.105), 30.773},
+					{ 0.000, Vector3.new(22.898, 0, 14.269), 17.769},
+					{ 0.405, Vector3.new(38.135, 0, 13.409), 11.606},
+					{ 0.608, Vector3.new(30.953, 0,  8.653), 11.107},
+					{ 1.092, Vector3.new(35.438, 0,  3.636), nil   },
+				}, CFrame.new(47.006, 1.293, 26.2)
+				*	CFrame.new((i-1)//12 * -25.081, 0, (i-1)%12 * -4.4)
+				));
+			end
+			return result;
+		end);
+
+		apply = (function(params, model) end);
 	},
 	["Bells"] = {
 		keys = {type = "range", track = "Tubular Bells", notes = {size = 10}};
@@ -24,9 +52,9 @@ local PipeDreamInstruments = {
 				result.angle = result.angle
 				+	math.rad(4) * Graph.wave(t, 1.2, 0.3);
 				Util.append(result.marbles, Graph.trajectory(t, {
-					{-0.35, Vector3.new( 0.000, 0, 11.000), 28.073 },
-					{ 0.00, Vector3.new(11.674, 0, 37.716), 34.696 },
-					{ 0.80, Vector3.new( 1.870, 0,  3.400), nil    },
+					{-0.350, Vector3.new( 0.000, 0, 11.000), 28.073 },
+					{ 0.000, Vector3.new(11.674, 0, 37.716), 34.696 },
+					{ 0.800, Vector3.new( 1.870, 0,  3.400), nil    },
 				}),CFrame.new(-5.003, 0, -18.3) * CFrame.Angles(
 					0, math.rad(Graph.lerp((i-1)/9, -40.5, 40.5)), 0
 				));
@@ -65,6 +93,7 @@ local PipeDreamInstruments = {
 					0, Graph.lerp((i-1)/39, 1.75*math.pi, -0.25*math.pi), 0
 				));
 			end
+			return result;
 		end);
 
 		apply = (function(params, model) end);
