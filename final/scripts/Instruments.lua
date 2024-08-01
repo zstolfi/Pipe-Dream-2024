@@ -25,11 +25,11 @@ local PipeDreamInstruments = {
 				result.drumBounce = result.drumBounce
 				+	0.2 * Graph.wave(t, 10, 13);
 				Util.append(result.marbles, Graph.trajectory(t, {
-					{-0.817, Vector3.new(39.766, 0, 24.105), 30.773},
-					{ 0.000, Vector3.new(22.898, 0, 14.269), 17.769},
-					{ 0.405, Vector3.new(38.135, 0, 13.409), 11.606},
-					{ 0.608, Vector3.new(30.953, 0,  8.653), 11.107},
-					{ 1.092, Vector3.new(35.438, 0,  3.636), nil   },
+					{-0.817, Vector3.new(39.766, 24.105, 0), 30.773},
+					{ 0.000, Vector3.new(22.898, 14.269, 0), 17.769},
+					{ 0.405, Vector3.new(38.135, 13.409, 0), 11.606},
+					{ 0.608, Vector3.new(30.953,  8.653, 0), 11.107},
+					{ 1.092, Vector3.new(35.438,  3.636, 0), nil   },
 				}, CFrame.new(47.006, 1.293, 26.2)
 				*	CFrame.new((i-1)//12 * -25.081, 0, (i-1)%12 * -4.4)
 				));
@@ -52,9 +52,9 @@ local PipeDreamInstruments = {
 				result.angle = result.angle
 				+	math.rad(4) * Graph.wave(t, 1.2, 0.3);
 				Util.append(result.marbles, Graph.trajectory(t, {
-					{-0.350, Vector3.new( 0.000, 0, 11.000), 28.073 },
-					{ 0.000, Vector3.new(11.674, 0, 37.716), 34.696 },
-					{ 0.800, Vector3.new( 1.870, 0,  3.400), nil    },
+					{-0.350, Vector3.new( 0.000, 11.000, 0), 28.073 },
+					{ 0.000, Vector3.new(11.674, 37.716, 0), 34.696 },
+					{ 0.800, Vector3.new( 1.870,  3.400, 0), nil    },
 				}),CFrame.new(-5.003, 0, -18.3) * CFrame.Angles(
 					0, math.rad(Graph.lerp((i-1)/9, -40.5, 40.5)), 0
 				));
@@ -86,9 +86,9 @@ local PipeDreamInstruments = {
 				result.barGlow = result.barGlow
 				+	(t > 0) and 0.8*math.exp(-t/0.2) or 0;
 				Util.append(result.marbles, Graph.trajectory(t, {
-					{-0.935, Vector3.new( 0.000, 0, 11.500), 33.356},
-					{ 0.000, Vector3.new(12.472, 0, 16.347), 25.102},
-					{ 0.768, Vector3.new(22.294, 0, 05.892), nil   },
+					{-0.935, Vector3.new( 0.000, 11.500, 0), 33.356},
+					{ 0.000, Vector3.new(12.472, 16.347, 0), 25.102},
+					{ 0.768, Vector3.new(22.294,  5.892, 0), nil   },
 				}), CFrame.new(-5.003, 0, -18.3) * CFrame.Angle(
 					0, Graph.lerp((i-1)/39, 1.75*math.pi, -0.25*math.pi), 0
 				));
