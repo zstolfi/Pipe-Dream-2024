@@ -100,10 +100,34 @@ local PipeDreamInstruments = {
 	},
 	["Marimba"] = {
 		keys = {type = "single", track = "Marimba", notes = {all = true}};
-		Params = {
-			bars = {};
-			marbles = {};
-		};
+		
+		animate = (function (seconds, cueTrack)
+			local result = {
+				bars = {};
+				marbles = {};
+			};
+			for _, cue in pairs(cueTrack) do
+				local t, p = seconds - cue.seconds, cue.pitch;
+				if -2.4 <= t and t <= 2.4 then
+					local u = Graph.map(t, -2.4, 2.4, 0.488, 0.012);
+					Util.append(result.bars, {
+						length = Graph.map(p, 36, 79, 6.919, 1.519);
+						bounce = Graph.wave(t, 6, 5) * 0.4;
+						position = 28.075 * Graph.roundedSquare(0.263, u)
+						+	Vector2.new(-44.15, 2.404);
+						normal = Graph.roundedSquare_normal(0.263, u);
+					});
+				end
+				Util.append(result.marbles, Graph.trajectory(t, {
+					{-0.534, Vector3.new(-28.674, 33.496, 29.193), 39.001},
+					{ 0.000, Vector3.new(-44.150, 33.120, 17.093), 34.271},
+					{ 0.601, Vector3.new(-56.652, 18.837,  7.318), nil   },
+				}));
+			end
+			return result;
+		end);
+
+		apply = (function(params, model) end);
 	},
 	["Drums"] = {
 		keys = {type = "list", track = "{10}", notes = {
