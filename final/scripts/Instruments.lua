@@ -30,8 +30,10 @@ local PipeDreamInstruments = {
 					{ 0.405, Vector3.new(38.135, 13.409, 0), 11.606},
 					{ 0.608, Vector3.new(30.953,  8.653, 0), 11.107},
 					{ 1.092, Vector3.new(35.438,  3.636, 0), nil   },
-				}, CFrame.new(47.006, 1.293, 26.2)
-				*	CFrame.new((i-1)//12 * -25.081, 0, (i-1)%12 * -4.4)
+				}, CFrame.new(0, 0, 26.2) * CFrame.new(
+						(i-1)//12 * -25.081, 0,
+						(i<=12 and 12-i or i-13) * -4.4
+					)
 				));
 			end
 			return result;
