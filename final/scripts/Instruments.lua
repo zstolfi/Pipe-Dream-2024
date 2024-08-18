@@ -84,12 +84,12 @@ local PipeDreamInstruments = {
 				result.barBounce = result.barBounce
 				+	0.2 * Graph.wave(t,6,2);
 				result.barGlow = result.barGlow
-				+	(t > 0) and 0.8*math.exp(-t/0.2) or 0;
+				+	(t > 0 and 0.8*math.exp(-t/0.2) or 0);
 				Util.append(result.marbles, Graph.trajectory(t, {
 					{-0.935, Vector3.new( 0.000, 11.500, 0), 33.356},
 					{ 0.000, Vector3.new(12.472, 16.347, 0), 25.102},
 					{ 0.768, Vector3.new(22.294,  5.892, 0), nil   },
-				}), CFrame.new(-5.003, 0, -18.3) * CFrame.Angle(
+				}), CFrame.new(-5.003, 0, -18.3) * CFrame.Angles(
 					0, Graph.lerp((i-1)/39, 1.75*math.pi, -0.25*math.pi), 0
 				));
 			end
@@ -140,14 +140,14 @@ local PipeDreamInstruments = {
 			["Tom 5"] = {48},
 			["Tom 6"] = {50},
 			-- Suckerpinch'd!
-			["Cowbell"] = {56},
-			["WBlock Hi"] = {76},
-			["WBlock Lo"] = {77}
+			-- ["Cowbell"] = {56},
+			-- ["WBlock Hi"] = {76},
+			-- ["WBlock Lo"] = {77},
 		}};
 
 		animate = (function (seconds, cueTrack)
 			local result = {
-				bounce = 0;
+				bounce = 0, radiusAdd = 0;
 				marbles = {};
 			};
 			for _, cue in pairs(cueTrack) do
@@ -187,7 +187,7 @@ local PipeDreamInstruments = {
 						{Graph.wave(t, 8,  8) * -0.15, 0.05}},
 				}) [name];
 				result.bounce = result.bounce + d[4][1];
-				result.radius = result.radius + d[4][1] * d[4][2];
+				result.radiusAdd = result.radiusAdd + d[4][1] * d[4][2];
 				Util.append(result.marbles, Graph.trajectory(t, {
 					{d[1][1], Vector3.new(-33.843,  14.831, -39.388), d[2][2]},
 					{  0.000, Vector3.new(d[2][1], d[2][2], d[2][3]), d[3][2]},
@@ -203,14 +203,42 @@ local PipeDreamInstruments = {
 		keys = {type = "list", track = "{10}", notes = {
 			["Crash 1"] = {49},
 			["Crash 2"] = {57},
-			["Splash"] = {55},
-			["HiHat"] = {42, 46}
+			-- ["Splash"] = {55},
+			-- ["HiHat"] = {42, 46}, -- {closed, open}
 		}};
-		Params = {
-			angleX = 0;
-			angleY = 0;
-			marbles = {};
-		};
+
+		animate = (function (seconds, cueTrack)
+			local result = {
+				angleX = 0;
+				angleY = 0;
+				marbles = {};
+			};
+			for _, cue in pairs(cueTrack) do
+				local t, name = seconds - cue.seconds, cue.keyName;
+				local d = ({
+					["Crash 1"]  = {{-0.935, 0.367},
+						{-27.057, 22.831, 11.271, 30.566},
+						{-28.527, 21.471, 23.111, 23.825},
+						{Graph.wave   (t, 2.3, 1) * math.rad(-20)
+						,Graph.waveCos(t, 2.0, 1) * math.rad(-15)}},
+					["Crash 2"] = {{-0.801, 0.334},
+						{-56.017, 22.001,  3.011,  30.334},
+						{-55.852, 20.008, 14.645,  24.796},
+						{Graph.wave   (t, 2.0, 1) * math.rad(-17)
+						,Graph.waveCos(t, 1.8, 1) * math.rad(-12)}},
+				}) [name];
+				result.angleX = result.angleX + d[4][1];
+				result.angleY = result.angleY + d[4][2];
+				Util.append(result.marbles, Graph.trajectory(t, {
+					{d[1][1], Vector3.new(-33.843,  14.831, -39.388), d[2][2]},
+					{  0.000, Vector3.new(d[2][1], d[2][2], d[2][3]), d[3][2]},
+					{d[1][2], Vector3.new(d[3][1], d[3][2], d[3][3]), nil    },
+				}));
+			end
+			return result;
+		end);
+
+		apply = (function(params, model) end);
 	},
 
 	-- Instrument positions are also categorized as 'keys' oddly enough.

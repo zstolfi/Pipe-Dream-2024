@@ -6,9 +6,14 @@ function Graph.lerp(t, a, b) return (1-t)*a + t*b; end
 function Graph.map(t, a, b, p, q) return Graph.lerp((t-a)/(b-a), p, q); end
 function Graph.clamp(t, t0, t1) return math.max(t0, math.min(t1, t)); end
 
-function Graph.wave(seconds, frequency, decay) --> number
+function Graph.wave(seconds, freq, dec) --> number
 	if seconds < 0 then return 0; end
-	return math.exp(-decay*seconds) * -math.sin(math.pi*frequency*seconds);
+	return math.exp(-dec*seconds) * -math.sin(math.pi*freq*seconds);
+end
+
+function Graph.waveCos(seconds, freq, dec) --> number
+	local s = math.max(0.7*seconds, seconds - 2/9*freq);
+	return Graph.wave(s, freq, dec) * math.exp(-2/9*freq);
 end
 
 function Graph.trajectory(seconds, arcs, offset) --> possible marble
