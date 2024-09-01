@@ -57,9 +57,9 @@ local PipeDreamInstruments = {
 					{-0.350, Vector3.new( 0.000, 11.000, 0), 28.073 },
 					{ 0.000, Vector3.new(11.674, 37.716, 0), 34.696 },
 					{ 0.800, Vector3.new( 1.870,  3.400, 0), nil    },
-				}),CFrame.new(-5.003, 0, -18.3) * CFrame.Angles(
-					0, math.rad(Graph.lerp((i-1)/9, -40.5, 40.5)), 0
-				));
+				},CFrame.new(-5.003, 0, -18.3) * CFrame.Angles(
+					0, math.rad(Graph.lerp((i-1)/9, 40.5, -40.5)), 0
+				)));
 			end
 			return result;
 		end);
@@ -91,9 +91,9 @@ local PipeDreamInstruments = {
 					{-0.935, Vector3.new( 0.000, 11.500, 0), 33.356},
 					{ 0.000, Vector3.new(12.472, 16.347, 0), 25.102},
 					{ 0.768, Vector3.new(22.294,  5.892, 0), nil   },
-				}), CFrame.new(-5.003, 0, -18.3) * CFrame.Angles(
+				}, CFrame.new(-5.003, 0, -18.3) * CFrame.Angles(
 					0, Graph.lerp((i-1)/39, 1.75*math.pi, -0.25*math.pi), 0
-				));
+				)));
 			end
 			return result;
 		end);
@@ -191,8 +191,8 @@ local PipeDreamInstruments = {
 				result.bounce = result.bounce + d[4][1];
 				result.radiusAdd = result.radiusAdd + d[4][1] * d[4][2];
 				Util.append(result.marbles, Graph.trajectory(t, {
-					{d[1][1], Vector3.new(-39.388,  14.831, -33.843), d[2][2]},
-					{  0.000, Vector3.new(d[2][1], d[2][2], d[2][3]), d[3][2]},
+					{d[1][1], Vector3.new(-39.388,  14.831, -33.843), d[2][4]},
+					{  0.000, Vector3.new(d[2][1], d[2][2], d[2][3]), d[3][4]},
 					{d[1][2], Vector3.new(d[3][1], d[3][2], d[3][3]), nil    },
 				}));
 			end
@@ -232,8 +232,8 @@ local PipeDreamInstruments = {
 				result.angleX = result.angleX + d[4][1];
 				result.angleY = result.angleY + d[4][2];
 				Util.append(result.marbles, Graph.trajectory(t, {
-					{d[1][1], Vector3.new(-33.843,  14.831, -39.388), d[2][2]},
-					{  0.000, Vector3.new(d[2][1], d[2][2], d[2][3]), d[3][2]},
+					{d[1][1], Vector3.new(-39.388,  14.831, -33.843), d[2][4]},
+					{  0.000, Vector3.new(d[2][1], d[2][2], d[2][3]), d[3][4]},
 					{d[1][2], Vector3.new(d[3][1], d[3][2], d[3][3]), nil    },
 				}));
 			end
