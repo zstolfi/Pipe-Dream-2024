@@ -191,7 +191,7 @@ local PipeDreamInstruments = {
 				result.bounce = result.bounce + d[4][1];
 				result.radiusAdd = result.radiusAdd + d[4][1] * d[4][2];
 				Util.append(result.marbles, Graph.trajectory(t, {
-					{d[1][1], Vector3.new(-33.843,  14.831, -39.388), d[2][2]},
+					{d[1][1], Vector3.new(-39.388,  14.831, -33.843), d[2][2]},
 					{  0.000, Vector3.new(d[2][1], d[2][2], d[2][3]), d[3][2]},
 					{d[1][2], Vector3.new(d[3][1], d[3][2], d[3][3]), nil    },
 				}));
