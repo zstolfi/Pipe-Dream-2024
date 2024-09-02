@@ -155,46 +155,17 @@ local PipeDreamInstruments = {
 			for _, cue in pairs(cueTrack) do
 				local t, name = seconds - cue.seconds, cue.keyName;
 				local d = ({
-					["Bass"]  = {{-0.668, 0.185},
-						{-39.388, 12.414,  4.152, 22.843},
-						{-39.388,  3.804, -1.678,  9.300},
-						{Graph.wave(t, 8,  8) * -0.20, 0.30}},
-					["Snare"] = {{-0.701, 0.401},
-						{-44.303, 19.382,  1.761, 28.418},
-						{-45.139, 24.622, 15.990, 25.465},
-						{Graph.wave(t, 8, 12) * -0.12, 1.00}},
-					["Tom 1"] = {{-0.834, 0.367},
-						{-53.528, 20.116, -2.749, 28.604},
-						{-59.152, 23.041,  9.610, 24.181},
-						{Graph.wave(t, 8, 10) * -0.15, 0.05}},
-					["Tom 2"] = {{-0.734, 0.401},
-						{-51.893, 20.116,  4.851, 27.879},
-						{-57.348, 22.288, 21.335, 24.424},
-						{Graph.wave(t, 8, 10) * -0.15, 0.05}},
-					["Tom 3"] = {{-0.734, 0.534},
-						{-48.677, 22.105,  9.811, 27.226},
-						{-43.985,  3.439, -9.919, 19.297},
-						{Graph.wave(t, 8,  8) * -0.15, 0.05}},
-					["Tom 4"] = {{-0.685, 0.567},
-						{-42.124, 23.522,  9.784, 28.285},
-						{-40.953,  3.459, -9.860, 20.867},
-						{Graph.wave(t, 8,  8) * -0.15, 0.05}},
-					["Tom 5"] = {{-0.717, 0.567},
-						{-36.672, 24.852, 10.040, 29.090},
-						{-37.749,  3.500, -9.749, 21.676},
-						{Graph.wave(t, 8,  8) * -0.15, 0.05}},
-					["Tom 6"] = {{-0.717, 0.567},
-						{-31.722, 24.553,  9.774, 28.914},
-						{-34.645,  3.541, -9.793, 21.745},
-						{Graph.wave(t, 8,  8) * -0.15, 0.05}},
+					["Bass"]  = {Graph.wave(t, 8,  8) * -0.20, 0.30},
+					["Snare"] = {Graph.wave(t, 8, 12) * -0.12, 1.00},
+					["Tom 1"] = {Graph.wave(t, 8, 10) * -0.15, 0.05},
+					["Tom 2"] = {Graph.wave(t, 8, 10) * -0.15, 0.05},
+					["Tom 3"] = {Graph.wave(t, 8,  8) * -0.15, 0.05},
+					["Tom 4"] = {Graph.wave(t, 8,  8) * -0.15, 0.05},
+					["Tom 5"] = {Graph.wave(t, 8,  8) * -0.15, 0.05},
+					["Tom 6"] = {Graph.wave(t, 8,  8) * -0.15, 0.05},
 				}) [name];
-				result.bounce = result.bounce + d[4][1];
-				result.radiusAdd = result.radiusAdd + d[4][1] * d[4][2];
-				Util.append(result.marbles, Graph.trajectory(t, {
-					{d[1][1], Vector3.new(-39.388,  14.831, -33.843), d[2][4]},
-					{  0.000, Vector3.new(d[2][1], d[2][2], d[2][3]), d[3][4]},
-					{d[1][2], Vector3.new(d[3][1], d[3][2], d[3][3]), nil    },
-				}));
+				result.bounce = result.bounce + d[1];
+				result.radiusAdd = result.radiusAdd + d[1] * d[2];
 			end
 			return result;
 		end);
@@ -218,19 +189,68 @@ local PipeDreamInstruments = {
 			for _, cue in pairs(cueTrack) do
 				local t, name = seconds - cue.seconds, cue.keyName;
 				local d = ({
+					["Crash 1"]  = {
+						Graph.wave   (t, 2.3, 1) * math.rad(-20),
+						Graph.waveCos(t, 2.0, 1) * math.rad(-15)},
+					["Crash 2"] = {
+						Graph.wave   (t, 2.0, 1) * math.rad(-17),
+						Graph.waveCos(t, 1.8, 1) * math.rad(-12)},
+				}) [name];
+				result.angleX = result.angleX + d[1];
+				result.angleY = result.angleY + d[2];
+			end
+			return result;
+		end);
+
+		apply = (function(params, model) end);
+	},
+	["Drum Marbles"] = {
+		keys = {type = "list", track = "{10}", notes = {
+			["Bass"]    = {36}, ["Snare"]   = {38},
+			["Tom 1"]   = {41}, ["Tom 4"]   = {47},
+			["Tom 2"]   = {43}, ["Tom 5"]   = {48},
+			["Tom 3"]   = {45}, ["Tom 6"]   = {50},
+			["Crash 1"] = {49}, ["Crash 2"] = {57},
+		}};
+
+		animate = (function (seconds, cueTrack)
+			local result = {
+				marbles = {};
+			};
+			for _, cue in pairs(cueTrack) do
+				local t, name = seconds - cue.seconds, cue.keyName;
+				local d = ({
+					["Bass"]  = {{-0.668, 0.185},
+						{-39.388, 12.414,  4.152, 22.843},
+						{-39.388,  3.804, -1.678,  9.300}},
+					["Snare"] = {{-0.701, 0.401},
+						{-44.303, 19.382,  1.761, 28.418},
+						{-45.139, 24.622, 15.990, 25.465}},
+					["Tom 1"] = {{-0.834, 0.367},
+						{-53.528, 20.116, -2.749, 28.604},
+						{-59.152, 23.041,  9.610, 24.181}},
+					["Tom 2"] = {{-0.734, 0.401},
+						{-51.893, 20.116,  4.851, 27.879},
+						{-57.348, 22.288, 21.335, 24.424}},
+					["Tom 3"] = {{-0.734, 0.534},
+						{-48.677, 22.105,  9.811, 27.226},
+						{-43.985,  3.439, -9.919, 19.297}},
+					["Tom 4"] = {{-0.685, 0.567},
+						{-42.124, 23.522,  9.784, 28.285},
+						{-40.953,  3.459, -9.860, 20.867}},
+					["Tom 5"] = {{-0.717, 0.567},
+						{-36.672, 24.852, 10.040, 29.090},
+						{-37.749,  3.500, -9.749, 21.676}},
+					["Tom 6"] = {{-0.717, 0.567},
+						{-31.722, 24.553,  9.774, 28.914},
+						{-34.645,  3.541, -9.793, 21.745}},
 					["Crash 1"]  = {{-0.935, 0.367},
 						{-27.057, 22.831, 11.271, 30.566},
-						{-28.527, 21.471, 23.111, 23.825},
-						{Graph.wave   (t, 2.3, 1) * math.rad(-20)
-						,Graph.waveCos(t, 2.0, 1) * math.rad(-15)}},
+						{-28.527, 21.471, 23.111, 23.825}},
 					["Crash 2"] = {{-0.801, 0.334},
 						{-56.017, 22.001,  3.011,  30.334},
-						{-55.852, 20.008, 14.645,  24.796},
-						{Graph.wave   (t, 2.0, 1) * math.rad(-17)
-						,Graph.waveCos(t, 1.8, 1) * math.rad(-12)}},
+						{-55.852, 20.008, 14.645,  24.796}},
 				}) [name];
-				result.angleX = result.angleX + d[4][1];
-				result.angleY = result.angleY + d[4][2];
 				Util.append(result.marbles, Graph.trajectory(t, {
 					{d[1][1], Vector3.new(-39.388,  14.831, -33.843), d[2][4]},
 					{  0.000, Vector3.new(d[2][1], d[2][2], d[2][3]), d[3][4]},
