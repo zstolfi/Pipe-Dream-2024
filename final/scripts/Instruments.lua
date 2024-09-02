@@ -211,6 +211,11 @@ local PipeDreamInstruments = {
 			["Tom 2"]   = {43}, ["Tom 5"]   = {48},
 			["Tom 3"]   = {45}, ["Tom 6"]   = {50},
 			["Crash 1"] = {49}, ["Crash 2"] = {57},
+			["4w"] = {
+				76, 77, -- WoodBlock (high, low)
+				42, 46, -- HiHat (closed, open)
+				55, 56, -- Splash, Cowbell
+			},
 		}};
 
 		animate = (function (seconds, cueTrack)
@@ -219,6 +224,12 @@ local PipeDreamInstruments = {
 			};
 			for _, cue in pairs(cueTrack) do
 				local t, name = seconds - cue.seconds, cue.keyName;
+				local off4w = (function()
+					if cue.pitch == 76 then return {0,  1.212}; end
+					if cue.pitch == 77 then return {0, -1.212}; end
+					if cue.pitch == 46 then return {0.220, 0}; end
+					return {0, 0};
+				end) ();
 				local d = ({
 					["Bass"]  = {{-0.668, 0.185},
 						{-39.388, 12.414,  4.152, 22.843},
@@ -250,6 +261,9 @@ local PipeDreamInstruments = {
 					["Crash 2"] = {{-0.801, 0.334},
 						{-56.017, 22.001,  3.011,  30.334},
 						{-55.852, 20.008, 14.645,  24.796}},
+					["4w"] = {{-0.680, 0.317},
+						{-35.067, 19.875+off4w[1],  1.691+off4w[2], 28.8},
+						{-33.938, 19.212         , 11.727         , 22.0}},
 				}) [name];
 				Util.append(result.marbles, Graph.trajectory(t, {
 					{d[1][1], Vector3.new(-39.388,  14.831, -33.843), d[2][4]},
