@@ -142,15 +142,11 @@ local PipeDreamInstruments = {
 			["Tom 5"] = {48},
 			["Tom 6"] = {50},
 			-- Suckerpinch'd!
-			-- ["Cowbell"] = {56},
-			-- ["WBlock Hi"] = {76},
-			-- ["WBlock Lo"] = {77},
 		}};
 
 		animate = (function (seconds, cueTrack)
 			local result = {
 				bounce = 0, radiusAdd = 0;
-				marbles = {};
 			};
 			for _, cue in pairs(cueTrack) do
 				local t, name = seconds - cue.seconds, cue.keyName;
@@ -176,28 +172,86 @@ local PipeDreamInstruments = {
 		keys = {type = "list", track = "{10}", notes = {
 			["Crash 1"] = {49},
 			["Crash 2"] = {57},
-			-- ["Splash"] = {55},
-			-- ["HiHat"] = {42, 46}, -- {closed, open}
+			["Splash"] = {55},
 		}};
 
 		animate = (function (seconds, cueTrack)
 			local result = {
 				angleX = 0;
 				angleY = 0;
-				marbles = {};
 			};
 			for _, cue in pairs(cueTrack) do
 				local t, name = seconds - cue.seconds, cue.keyName;
 				local d = ({
 					["Crash 1"]  = {
-						Graph.wave   (t, 2.3, 1) * math.rad(-20),
-						Graph.waveCos(t, 2.0, 1) * math.rad(-15)},
+						Graph.wave   (t, 2.3, 1.0) * math.rad(-20),
+						Graph.waveCos(t, 2.0, 1.0) * math.rad(-15)},
 					["Crash 2"] = {
-						Graph.wave   (t, 2.0, 1) * math.rad(-17),
-						Graph.waveCos(t, 1.8, 1) * math.rad(-12)},
+						Graph.wave   (t, 2.0, 1.0) * math.rad(-17),
+						Graph.waveCos(t, 1.8, 1.0) * math.rad(-12)},
+					["Splash"] = {
+						Graph.wave   (t, 3.5, 1.5) * math.rad(-30),
+						Graph.waveCos(t, 3.5, 1.5) * math.rad( 40)},
 				}) [name];
 				result.angleX = result.angleX + d[1];
 				result.angleY = result.angleY + d[2];
+			end
+			return result;
+		end);
+
+		apply = (function(params, model) end);
+	},
+	["Cowbell"] = {
+		keys = {type = "single", track = "{10}", notes = {56}};
+
+		animate = (function(seconds, cueTrack)
+			local result = {
+				angle = 0;
+			};
+			for _, cue in pairs(cueTrack) do
+				local t = seconds - cue.seconds;
+				result.angle = result.angle
+				+	Graph.wave(t, 10, 9) * math.rad(-8);
+			end
+			return result;
+		end);
+
+		apply = (function(params, model) end);
+	},
+	["Wood Block"] = {
+		keys = {type = "list", track = "{10}", notes = {
+			["High"] = {76},
+			["Low"] = {77},
+		}};
+
+		animate = (function(seconds, cueTrack)
+			local result = {
+				bounce = 0;
+			};
+			for _, cue in pairs(cueTrack) do
+				local t, name = seconds - cue.seconds, cue.keyName;
+				result.bounce = result.bounce
+				+	Graph.wave(t, 5, 9) * 0.4;
+			end
+			return result;
+		end);
+
+		apply = (function(params, model) end);
+	},
+	["Hi-Hat"] = {
+		keys = {type = "list", track = "{10}", notes = {
+			["Closed"] = {42},
+			["Open"] = {46},
+		}};
+
+		animate = (function(seconds, cueTrack)
+			local result = {
+				angle = 0;
+			};
+			for _, cue in pairs(cueTrack) do
+				local t = seconds - cue.seconds;
+				result.angle = result.angle
+				+	Graph.wave(t, 7.5, 3.5) * math.rad(-9);
 			end
 			return result;
 		end);
